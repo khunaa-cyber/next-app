@@ -1,0 +1,129 @@
+/* My History page styles */
+.my-history-page {
+  padding-top: 13rem;
+}
+
+.history-section {
+  padding: 5rem 10%;
+}
+
+.history-container {
+  background-color: var(--white);
+  border-radius: 1rem;
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.history-tabs {
+  display: flex;
+  background-color: var(--blue);
+}
+
+.tab {
+  padding: 1.5rem 3rem;
+  font-size: 1.8rem;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.tab.active {
+  background-color: var(--white);
+  color: var(--blue);
+}
+
+.tab-content {
+  padding: 3rem;
+}
+
+.tab-content h2 {
+  font-size: 2.4rem;
+  color: var(--blue);
+  margin-bottom: 2rem;
+}
+
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table th {
+  background-color: var(--background-color);
+  padding: 1.2rem;
+  text-align: left;
+  font-size: 1.6rem;
+  color: var(--blue);
+}
+
+.appointments-table td {
+  padding: 1.2rem;
+  font-size: 1.6rem;
+  border-bottom: 1px solid #eee;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.4rem;
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status.completed {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.status.upcoming {
+  background-color: #fff8e1;
+  color: #ffa000;
+}
+
+.button.small {
+  height: 3rem;
+  width: auto;
+  padding: 0 1.5rem;
+  font-size: 1.4rem;
+  margin: 0.3rem;
+}
+
+.treatments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.treatment-card {
+  border-radius: 1rem;
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.treatment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.treatment-header h3 {
+  font-size: 1.8rem;
+  color: var(--blue);
+}
+
+.treatment-date {
+  font-size: 1.4rem;
+  color: var(--black);
+}
+
+.treatment-details p {
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .appointments-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
