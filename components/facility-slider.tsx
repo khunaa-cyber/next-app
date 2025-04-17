@@ -7,15 +7,15 @@ export function FacilitySlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const facilityImages = [
-    "/IMG_5351.JPG",
-    "/IMG_5352.JPG",
-    "/IMG_5353.JPG",
-    "/IMG_5354.JPG",
-    "/IMG_5355.JPG",
-    "/IMG_5356.JPG",
-    "/IMG_5357.JPG",
-    "/IMG_5358.JPG",
-    "/IMG_5359.JPG",
+    "/IMG_5351.PNG",
+    "/IMG_5352.PNG",
+    "/IMG_5353.PNG",
+    "/IMG_5354.PNG",
+    "/IMG_5355.PNG",
+    "/IMG_5356.PNG",
+    "/IMG_5357.PNG",
+    "/IMG_5358.PNG",
+    "/IMG_5359.PNG",
   ]
 
   useEffect(() => {

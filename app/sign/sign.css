@@ -1,13 +1,17 @@
 /* Sign page styles */
-.sign-page {
-  padding-top: 13rem;
-  min-height: 100vh;
+.header {
+  width: 100%;
+  position: fixed;
+  background-color: var(--main-color1);
+  height: 6rem;
+  z-index: 100;
+  top:0;
 }
+.return_home{
+  position: relative;
+  left:30rem;
+  font-size: 2rem;
 
-.sign-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: calc(100vh - 13rem);
 }
 
 .sign-form-container {
@@ -19,7 +23,17 @@
 
 .sign-form-content {
   width: 100%;
-  max-width: 400px;
+  max-width: 1000px;
+  padding:8rem 20rem;
+  border-radius: 2rem;
+  margin: 2rem 0;
+  font-size: 2rem;
+ 
+ 
+
+  border:1px solid var(--main-color1);
+
+
 }
 
 .sign-form-content h1 {

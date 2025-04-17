@@ -3,6 +3,8 @@
   padding-top: 13rem;
 }
 
+
+
 .history-section {
   padding: 5rem 10%;
 }
@@ -15,9 +17,16 @@
 }
 
 .history-tabs {
-  display: flex;
-  background-color: var(--blue);
+display: flex;
+justify-content: space-around;
+align-items: center;
+padding: 1rem;
+width: 100%;
+background-color: var(--white);
+
+
 }
+
 
 .tab {
   padding: 1.5rem 3rem;
@@ -28,8 +37,30 @@
 
 .tab.active {
   background-color: var(--white);
-  color: var(--blue);
+  color: var(--main-color1);
+  font-size: 2rem;
+  width: 100%;
+
+
+
 }
+
+.tab.active :hover{
+  background-color: var(--blue);
+
+  color: var(--main-color1);
+}
+
+
+
+  
+
+
+
+
+
+
+
 
 .tab-content {
   padding: 3rem;

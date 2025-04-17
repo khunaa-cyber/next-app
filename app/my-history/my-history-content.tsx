@@ -1,48 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "../../context/auth-context"
+import { AuthWrapper } from "@/components/auth-wrapper"
+import Link from "next/link"
+
 
 export function MyHistoryContent() {
-  const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const [auth, setAuth] = useState({ user: null, isLoading: true })
-  const { user, isLoading } = auth
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (mounted) {
-      setAuth(useAuth())
-    }
-  }, [mounted])
-
-  useEffect(() => {
-    if (mounted && !isLoading) {
-      if (!user) {
-        router.push("/sign")
-      } else if (user.role !== "client") {
-        router.push("/sign")
-      }
-    }
-  }, [user, isLoading, router, mounted])
-
-  if (!mounted || isLoading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Уншиж байна...</p>
-      </div>
-    )
-  }
-
-  if (!user || user.role !== "client") {
-    return null
-  }
-
   const appointments = [
     {
       id: 1,
@@ -109,85 +71,95 @@ export function MyHistoryContent() {
   ]
 
   return (
-    <main className="my-history-page">
-      <div className="page-banner">
-        <h1>Миний түүх</h1>
-        <p>Таны эмчилгээний түүх, цаг захиалга</p>
-      </div>
+    <AuthWrapper requiredRole="client">
+      <main className="my-history-page">
+        <div className="page-banner ">
+          <p>Таны эрүүл мэндийн түүх</p>
+        
+        </div>
 
-      <section className="history-section">
-        <div className="history-container">
-          <div className="history-tabs">
-            <div className="tab active">Цаг захиалга</div>
-            <div className="tab">Эмчилгээний түүх</div>
-          </div>
+        <section className="history-section">
+          <div className="history-container">
+            <div className="history-tabs">
+              <div className="tab active">
+              <Link href="/blog">Цаг захиалга</Link>
+              </div>
+              <div className="tab active">
+              <Link href="/blog">Цаг захиалга</Link>
+              </div>
+              <div className="tab active">
+              <Link href="/blog">Цаг захиалга</Link>
+              </div>
 
-          <div className="tab-content">
-            <div className="appointments-list">
-              <h2>Цаг захиалгын түүх</h2>
+              </div>
+           
 
-              <table className="appointments-table">
-                <thead>
-                  <tr>
-                    <th>Огноо</th>
-                    <th>Цаг</th>
-                    <th>Эмч</th>
-                    <th>Үйлчилгээ</th>
-                    <th>Төлөв</th>
-                    <th>Үйлдэл</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {appointments.map((appointment) => (
-                    <tr key={appointment.id}>
-                      <td>{appointment.date}</td>
-                      <td>{appointment.time}</td>
-                      <td>{appointment.doctor}</td>
-                      <td>{appointment.service}</td>
-                      <td>
-                        <span className={`status ${appointment.status === "Дууссан" ? "completed" : "upcoming"}`}>
-                          {appointment.status}
-                        </span>
-                      </td>
-                      <td>{appointment.status !== "Дууссан" && <button className="button small">Цуцлах</button>}</td>
+            <div className="tab-content">
+              <div className="appointments-list">
+                <h2>Цаг захиалгын түүх</h2>
+
+                <table className="appointments-table">
+                  <thead>
+                    <tr>
+                      <th>Огноо</th>
+                      <th>Цаг</th>
+                      <th>Эмч</th>
+                      <th>Үйлчилгээ</th>
+                      <th>Төлөв</th>
+                      <th>Үйлдэл</th>
                     </tr>
+                  </thead>
+                  <tbody>
+                    {appointments.map((appointment) => (
+                      <tr key={appointment.id}>
+                        <td>{appointment.date}</td>
+                        <td>{appointment.time}</td>
+                        <td>{appointment.doctor}</td>
+                        <td>{appointment.service}</td>
+                        <td>
+                          <span className={`status ${appointment.status === "Дууссан" ? "completed" : "upcoming"}`}>
+                            {appointment.status}
+                          </span>
+                        </td>
+                        <td>{appointment.status !== "Дууссан" && <button className="button small">Цуцлах</button>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="treatments-list" style={{ display: "none" }}>
+                <h2>Эмчилгээний түүх</h2>
+
+                <div className="treatments-grid">
+                  {treatments.map((treatment) => (
+                    <div className="treatment-card" key={treatment.id}>
+                      <div className="treatment-header">
+                        <h3>{treatment.treatment}</h3>
+                        <span className="treatment-date">{treatment.date}</span>
+                      </div>
+                      <div className="treatment-details">
+                        <p>
+                          <strong>Эмч:</strong> {treatment.doctor}
+                        </p>
+                        <p>
+                          <strong>Онош:</strong> {treatment.diagnosis}
+                        </p>
+                        <p>
+                          <strong>Тэмдэглэл:</strong> {treatment.notes}
+                        </p>
+                        <p>
+                          <strong>Төлбөр:</strong> {treatment.cost}
+                        </p>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="treatments-list" style={{ display: "none" }}>
-              <h2>Эмчилгээний түүх</h2>
-
-              <div className="treatments-grid">
-                {treatments.map((treatment) => (
-                  <div className="treatment-card" key={treatment.id}>
-                    <div className="treatment-header">
-                      <h3>{treatment.treatment}</h3>
-                      <span className="treatment-date">{treatment.date}</span>
-                    </div>
-                    <div className="treatment-details">
-                      <p>
-                        <strong>Эмч:</strong> {treatment.doctor}
-                      </p>
-                      <p>
-                        <strong>Онош:</strong> {treatment.diagnosis}
-                      </p>
-                      <p>
-                        <strong>Тэмдэглэл:</strong> {treatment.notes}
-                      </p>
-                      <p>
-                        <strong>Төлбөр:</strong> {treatment.cost}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </AuthWrapper>
   )
 }
-
