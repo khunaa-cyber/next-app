@@ -11,8 +11,8 @@ export function Footer() {
 
         <div className="footer-box">
           <h2 className="logo">Тусламж</h2>
-          <Link href="/book-online">Түгээмэл асуулт</Link>
-          <Link href="#">Санал хүсэлт</Link>
+          <Link href="/faq">Түгээмэл асуулт</Link>
+          <Link href="/feedback">Санал хүсэлт</Link>
         </div>
         
 
