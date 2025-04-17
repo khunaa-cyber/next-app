@@ -44,7 +44,7 @@ export default function Home() {
       <section className="testimonials-section">
         <div className="section-title">
           <span className="divider">|</span>
-          <p>Үйлчлүүлэгчдийн сэтгэгдэлүүдээс</p>
+          <p>Үйлчлүүлэгчдийн сэтгэгдлүүдээс</p>
           <span className="divider">|</span>
         </div>
         <TestimonialSlider />
