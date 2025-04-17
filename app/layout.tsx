@@ -4,6 +4,8 @@ import type { Metadata } from "next"
 import Script from "next/script"
 import { ClientAuthProvider } from "../components/client-auth-provider"
 import { Inter, Nunito, Roboto } from "next/font/google"
+import "slick-carousel/slick/slick.css"
+import "slick-carousel/slick/slick-theme.css"
 
 // Load fonts using Next.js font optimization
 const inter = Inter({
