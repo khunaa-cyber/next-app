@@ -1,15 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AuthWrapper } from "@/components/auth-wrapper"
 import { useAuth } from "@/context/auth-context"
+import { userAPI, appointmentsAPI } from "@/lib/api"
 import Image from "next/image"
 
 export function MyHistoryContent() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
   const [isEditing, setIsEditing] = useState(false)
-  
+  const [isLoading, setIsLoading] = useState(true)
+  const [appointments, setAppointments] = useState([])
+
   // User profile state
   const [profile, setProfile] = useState({
     name: user?.name || "Нэргүй хэрэглэгч",
@@ -19,79 +22,81 @@ export function MyHistoryContent() {
     birthdate: "1990-01-01",
     gender: "Эрэгтэй",
     allergies: "Байхгүй",
-    bloodType: "A+"
+    bloodType: "A+",
   })
+
+  // Fetch user profile and appointments
+  useEffect(() => {
+    if (user) {
+      const fetchUserData = async () => {
+        setIsLoading(true)
+        try {
+          // Fetch user profile
+          const profileResponse = await userAPI.getById(user.id)
+          if (profileResponse.success) {
+            setProfile({
+              name: profileResponse.user.name,
+              phone: profileResponse.user.phone || "99887766",
+              email: profileResponse.user.email,
+              address: profileResponse.user.address || "Баянзүрх дүүрэг, 13-р хороолол",
+              birthdate: profileResponse.user.birthdate || "1990-01-01",
+              gender: profileResponse.user.gender || "Эрэгтэй",
+              allergies: profileResponse.user.allergies || "Байхгүй",
+              bloodType: profileResponse.user.bloodType || "A+",
+            })
+          }
+
+          // Fetch appointments
+          const appointmentsResponse = await appointmentsAPI.getByUserId(user.id)
+          if (appointmentsResponse.success) {
+            setAppointments(appointmentsResponse.appointments)
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+
+      fetchUserData()
+    }
+  }, [user])
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target
-    setProfile(prev => ({
+    setProfile((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
   }
 
-  const saveProfile = () => {
-    // Here you would typically save to backend
-    setIsEditing(false)
+  const saveProfile = async () => {
+    try {
+      const response = await userAPI.updateProfile(user.id, profile)
+      if (response.success) {
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error)
+    }
   }
 
-  const appointments = [
-    {
-      id: 1,
-      date: "2023-11-15",
-      time: "10:00",
-      doctor: "Д. Болормаа",
-      service: "Шүдний цэвэрлэгээ",
-      status: "Дууссан",
-      cost: "50,000₮",
-      notes: "Дараагийн 6 сарын дараа шүдний цэвэрлэгээ хийлгэхийг зөвлөсөн",
-      diagnosis: "Шүдний өнгөлгөө хийгдсэн",
-    },
-    {
-      id: 2,
-      date: "2023-12-20",
-      time: "14:30",
-      doctor: "Б. Батбаяр",
-      service: "Шүдний ломбо",
-      status: "Дууссан",
-      cost: "85,000₮",
-      notes: "Хатуу хоол идэхээс зайлсхийх",
-      diagnosis: "36-р шүдний цоорол",
-    },
-    {
-      id: 3,
-      date: "2024-02-05",
-      time: "11:15",
-      doctor: "Д. Болормаа",
-      service: "Шүдний үзлэг",
-      status: "Дууссан",
-      cost: "30,000₮",
-      notes: "Шүдний утас ашиглахыг зөвлөсөн",
-      diagnosis: "Шүдний эрүүл мэнд хэвийн",
-    },
-    {
-      id: 4,
-      date: "2024-04-10",
-      time: "15:00",
-      doctor: "Г. Оюунчимэг",
-      service: "Шүдний гажиг засал",
-      status: "Товлосон",
-      cost: "120,000₮",
-      notes: "Эмчилгээний явц хэвийн",
-      diagnosis: "Шүдний гажиг",
-    },
-    {
-      id: 5,
-      date: "2024-05-20",
-      time: "09:30",
-      doctor: "Д. Болормаа",
-      service: "Шүдний үзлэг",
-      status: "Товлосон",
-      cost: "30,000₮",
-      notes: "Урьдчилан сэргийлэх үзлэг",
-      diagnosis: "Үзлэг",
-    },
-  ]
+  const cancelAppointment = async (appointmentId) => {
+    try {
+      const response = await appointmentsAPI.cancel(appointmentId)
+      if (response.success) {
+        // Update the appointments list
+        setAppointments((prev) =>
+          prev.map((appointment) =>
+            appointment.id === appointmentId ? { ...appointment, status: "Цуцалсан" } : appointment,
+          ),
+        )
+      }
+    } catch (error) {
+      console.error("Error cancelling appointment:", error)
+    }
+  }
+
 
   return (
     <AuthWrapper requiredRole="client">

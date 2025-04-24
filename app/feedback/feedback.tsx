@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useAuth } from "@/context/auth-context"
+import { feedbackAPI } from "@/lib/api"
 
 export function FeedbackForm() {
   const { user } = useAuth()
@@ -15,6 +16,7 @@ export function FeedbackForm() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState("")
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,15 +29,22 @@ export function FeedbackForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError("")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await feedbackAPI.submit(formData)
 
-    // In a real app, you would send the feedback to your backend
-    console.log("Feedback submitted:", formData)
-
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+      if (response.success) {
+        setIsSubmitted(true)
+      } else {
+        setError(response.message || "Санал хүсэлт илгээхэд алдаа гарлаа. Дахин оролдоно уу.")
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error)
+      setError("Санал хүсэлт илгээхэд алдаа гарлаа. Дахин оролдоно уу.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isSubmitted) {
@@ -50,7 +59,7 @@ export function FeedbackForm() {
             Таны санал хүсэлтийг хүлээн авлаа. Бид таны саналыг анхааралтай судалж, үйлчилгээгээ сайжруулахад ашиглах
             болно.
           </p>
-          <button className="button " style={{width:'30rem' }}  onClick={() => setIsSubmitted(false)}>
+          <button className="button" onClick={() => setIsSubmitted(false)}>
             Өөр санал хүсэлт илгээх
           </button>
         </div>
@@ -89,13 +98,15 @@ export function FeedbackForm() {
               <i className="fa-solid fa-location-dot"></i>
               <div>
                 <h3>Хаяг</h3>
-                <p></p>
+                <p>СБД, 1-р хороо, Чингисийн өргөн чөлөө</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="feedback-form-container">
+          {error && <div className="error-message">{error}</div>}
+
           <form onSubmit={handleSubmit} className="feedback-form">
             <div className="form-group">
               <label htmlFor="feedbackType">Санал хүсэлтийн төрөл</label>

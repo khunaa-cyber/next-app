@@ -40,91 +40,9 @@ export function DoctorDashboardContent() {
     return null
   }
 
-  const appointments = [
-    {
-      id: 1,
-      date: "2024-04-05",
-      time: "09:00",
-      patient: "Б. Баясгалан",
-      service: "Шүдний үзлэг",
-      status: "Хүлээгдэж буй",
-    },
-    {
-      id: 2,
-      date: "2024-04-05",
-      time: "10:30",
-      patient: "Д. Сарангэрэл",
-      service: "Шүдний ломбо",
-      status: "Хүлээгдэж буй",
-    },
-    {
-      id: 3,
-      date: "2024-04-05",
-      time: "13:00",
-      patient: "Г. Батболд",
-      service: "Шүдний цэвэрлэгээ",
-      status: "Хүлээгдэж буй",
-    },
-    {
-      id: 4,
-      date: "2024-04-05",
-      time: "15:30",
-      patient: "С. Оюунтуяа",
-      service: "Шүдний гажиг засал",
-      status: "Хүлээгдэж буй",
-    },
-    {
-      id: 5,
-      date: "2024-04-06",
-      time: "09:30",
-      patient: "Н. Мөнхбат",
-      service: "Шүдний үзлэг",
-      status: "Хүлээгдэж буй",
-    },
-  ]
+// 
 
-  const patients = [
-    {
-      id: 1,
-      name: "Б. Баясгалан",
-      age: 35,
-      phone: "9911-2233",
-      email: "bayasgalan@example.com",
-      lastVisit: "2024-03-10",
-    },
-    {
-      id: 2,
-      name: "Д. Сарангэрэл",
-      age: 28,
-      phone: "9922-3344",
-      email: "sarangerel@example.com",
-      lastVisit: "2024-02-15",
-    },
-    {
-      id: 3,
-      name: "Г. Батболд",
-      age: 42,
-      phone: "9933-4455",
-      email: "batbold@example.com",
-      lastVisit: "2024-03-22",
-    },
-    {
-      id: 4,
-      name: "С. Оюунтуяа",
-      age: 25,
-      phone: "9944-5566",
-      email: "oyuntuya@example.com",
-      lastVisit: "2024-01-30",
-    },
-    {
-      id: 5,
-      name: "Н. Мөнхбат",
-      age: 31,
-      phone: "9955-6677",
-      email: "munkhbat@example.com",
-      lastVisit: "2024-03-05",
-    },
-  ]
+
 
   return (
     <main className="doctor-dashboard-page">

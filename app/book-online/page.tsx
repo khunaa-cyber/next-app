@@ -1,15 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { useAuth } from "@/context/auth-context"
+import { doctorsAPI, servicesAPI, appointmentsAPI } from "@/lib/api"
 import "./book-online.css"
 
 export default function BookOnlinePage() {
   const searchParams = useSearchParams()
   const initialService = searchParams.get("service")
   const initialDoctor = searchParams.get("doctor")
+  const router = useRouter()
+  const { user } = useAuth()
 
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -17,53 +21,82 @@ export default function BookOnlinePage() {
     doctor: initialDoctor || "",
     date: "",
     time: "",
-    name: "",
+    name: user?.name || "",
     phone: "",
-    email: "",
+    email: user?.email || "",
     notes: "",
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [services, setServices] = useState([])
+  const [doctors, setDoctors] = useState([])
+  const [error, setError] = useState("")
 
-  const services = [
-    { id: "1", name: "Шүдний цэвэрлэгээ" },
-    { id: "2", name: "Шүдний ломбо" },
-    { id: "3", name: "Шүдний суулгац" },
-    { id: "4", name: "Шүдний гажиг засал" },
-    { id: "5", name: "Шүдний цайралт" },
-    { id: "6", name: "Хүүхдийн шүдний эмчилгээ" },
-    { id: "7", name: "Яаралтай тусламж" },
-    { id: "8", name: "Шүдний титэм, гүүр" },
-  ]
+  // Fetch services and doctors
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        // Fetch services
+        const servicesResponse = await servicesAPI.getAll()
+        if (servicesResponse.success) {
+          setServices(
+            servicesResponse.services.map((service: { id: { toString: () => any }; title: any }) => ({
+              id: service.id.toString(),
+              name: service.title,
+            })),
+          )
+        }
 
-  const doctors = [
-    { id: "1", name: "Д. Болормаа", specialty: "Ерөнхий шүдний эмч" },
-    { id: "2", name: "Б. Батбаяр", specialty: "Шүдний мэс засалч" },
-    { id: "3", name: "Г. Оюунчимэг", specialty: "Шүдний гажиг засалч" },
-    { id: "4", name: "Н. Энхбаяр", specialty: "Шүдний эмч" },
-    { id: "5", name: "С. Мөнхзул", specialty: "Хүүхдийн шүдний эмч" },
-    { id: "6", name: "Д. Ганбаатар", specialty: "Шүдний эмч" },
-  ]
+        // Fetch doctors
+        const doctorsResponse = await doctorsAPI.getAll()
+        if (doctorsResponse.success) {
+          setDoctors(
+            doctorsResponse.doctors.map((doctor: { id: any; name: any; position: any }) => ({
+              id: doctor.id,
+              name: doctor.name,
+              specialty: doctor.position,
+            })),
+          )
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        setError("Мэдээлэл ачааллахад алдаа гарлаа. Дахин оролдоно уу.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name,
+        email: user.email,
+      }))
+    }
+  }, [user])
 
   const availableTimes = [
     "09:00",
-    "09:30",
     "10:00",
-    "10:30",
     "11:00",
-    "11:30",
     "13:00",
-    "13:30",
     "14:00",
-    "14:30",
     "15:00",
-    "15:30",
     "16:00",
-    "16:30",
+    "17:00",
+    "18:00",
+    
   ]
 
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -76,15 +109,56 @@ export default function BookOnlinePage() {
     setStep((prev) => prev - 1)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError("")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      if (!user) {
+        // Redirect to sign in if not logged in
+        router.push("/sign?redirect=book-online")
+        return
+      }
 
-    setIsSubmitting(false)
-    setIsSuccess(true)
+      const response = await appointmentsAPI.create({
+        userId: user.id,
+        doctorId: formData.doctor,
+        date: formData.date,
+        time: formData.time,
+        service: services.find((s) => s.id === formData.service)?.name || "",
+      })
+
+      if (response.success) {
+        setIsSuccess(true)
+      } else {
+        setError(response.message || "Цаг захиалахад алдаа гарлаа. Дахин оролдоно уу.")
+      }
+    } catch (error) {
+      console.error("Error booking appointment:", error)
+      setError("Цаг захиалахад алдаа гарлаа. Дахин оролдоно уу.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <main className="book-online-page">
+          <div className="page-banner">
+            <h1>Цаг захиалах</h1>
+            <p>Та доорх маягтыг бөглөн цаг захиалах боломжтой</p>
+          </div>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Уншиж байна...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
   }
 
   return (
@@ -95,6 +169,12 @@ export default function BookOnlinePage() {
           <h1>Цаг захиалах</h1>
           <p>Та доорх маягтыг бөглөн цаг захиалах боломжтой</p>
         </div>
+
+        {error && (
+          <div className="error-container">
+            <div className="error-message">{error}</div>
+          </div>
+        )}
 
         {isSuccess ? (
           <section className="booking-success">
@@ -318,4 +398,3 @@ export default function BookOnlinePage() {
     </>
   )
 }
-
