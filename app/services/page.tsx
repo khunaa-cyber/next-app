@@ -1,14 +1,40 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { servicesAPI } from "@/lib/api"
+import ServiceSlider from "@/components/service-slider"
 import "./service.css"
 
-export default async function ServicesPage() {
-  // Fetch services from API
-  const response = await servicesAPI.getAll()
-  const services = response.success ? response.services : []
+interface Service {
+  id: number
+  title: string
+  description: string
+  images: string[]
+  price: string
+}
+
+export default function ServicesPage() {
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedServiceId, setExpandedServiceId] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch("/api/services")
+      .then((res) => res.json())
+      .then((data) => {
+        setServices(data.services)  
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error("Үйлчилгээнүүдийг ачаалах үед алдаа гарлаа:", err)
+        setLoading(false)
+      })
+  }, [])
+  
+
   return (
     <>
       <Header />
@@ -20,29 +46,48 @@ export default async function ServicesPage() {
 
         <section className="services-list">
           <div className="services-grid">
-            {services.map((service) => (
-              <div className="service-card" key={service.id}>
-                <div className="service-image">
-                  <Image
-                    src={service.image || "/placeholder.svg"}
-                    alt={service.title}
-                    width={400}
-                    height={250}
-                    className="object-cover"
-                  />
-                </div>
-                <div className="service-details">
-                  <h2>{service.title}</h2>
-                  <p>{service.description}</p>
-                  <div className="service-price">
-                    <span>{service.price}</span>
+            {loading ? (
+              <p>Үйлчилгээнүүдийг ачааллаж байна...</p>
+            ) : services.length > 0 ? (
+              services.map((service) => (
+                <div className="service-card" key={service.id}>
+                  <div className="service-image">
+                    {service.images?.length ? (
+                      <ServiceSlider title={service.title} images={service.images} />
+                    ) : (
+                      <Image
+                        src="/placeholder.svg"
+                        alt={service.title}
+                        width={400}
+                        height={250}
+                      />
+                    )}
                   </div>
-                  <Link href={`/book-online?service=${service.id}`}>
-                    <button className="button">Цаг захиалах</button>
-                  </Link>
+                  <div className="service-details">
+                    <h2>{service.title}</h2>
+                    <p>{service.description}</p>
+                    <div className="service-price">
+                      <span>{service.price}</span>
+                    </div>
+                    <button
+                      className="button"
+                      onClick={() =>
+                        setExpandedServiceId(expandedServiceId === service.id ? null : service.id)
+                      }
+                    >
+                      {expandedServiceId === service.id ? "Хураах" : "Дэлгэрэнгүй"}
+                    </button>
+                  </div>
+                  {expandedServiceId === service.id && (
+                    <div className="service-expanded">
+                      <p>Энд дэлгэрэнгүй мэдээлэл байна.</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>Одоогоор үйлчилгээ олдсонгүй.</p>
+            )}
           </div>
         </section>
 
@@ -51,7 +96,7 @@ export default async function ServicesPage() {
             <h2>Эрүүл шүд, гэрэлтсэн инээмсэглэлтэй болохыг хүсч байна уу?</h2>
             <p>Манай мэргэжлийн баг танд туслахад бэлэн байна</p>
             <Link href="/book-online">
-              <button className="button">Одоо цаг захиалах</button>
+              <button className="button">Цаг захиалах</button>
             </Link>
           </div>
         </section>
@@ -60,4 +105,3 @@ export default async function ServicesPage() {
     </>
   )
 }
-
