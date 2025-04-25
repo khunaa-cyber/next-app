@@ -11,13 +11,13 @@ export function Footer() {
 
         <div className="footer-box">
           <h2 className="logo">Тусламж</h2>
-          <Link href="/book-online">Түгээмэл асуулт</Link>
-          <Link href="#">Санал хүсэлт</Link>
+          <Link href="/faq">Түгээмэл асуулт</Link>
+          <Link href="/feedback">Санал хүсэлт</Link>
         </div>
+        
 
         <div className="footer-box">
           <h2 className="logo">Холбоо барих</h2>
-          <a href="#">Даваа - Баасан 09:00 - 20:00 цаг</a>
           <a href="tel:+97677007700">+976 - 77007700</a>
           <a href="mailto:info@dentalclinic.mn">info@dentalclinic.mn</a>
         </div>

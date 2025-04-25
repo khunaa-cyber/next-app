@@ -1,15 +1,14 @@
 import { Footer } from "@/components/footer"
-import { SignForm } from "./sign-form"
-import "./sign.css"
+import RegisterForm from "./register-form"
+import "../sign/sign.css"
 
-export default function SignPage() {
+export default function RegisterPage() {
   return (
     <>
       <main className="sign-page">
-        <SignForm />
+        <RegisterForm/>
       </main>
       <Footer />
     </>
   )
 }
-

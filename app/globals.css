@@ -30,6 +30,7 @@ body {
   overflow-x: hidden;
 }
 
+
 /* Button styles */
 .button {
   height: 3.5rem;
@@ -591,6 +592,11 @@ header .button:hover {
   font-size: 1.5rem;
   padding-top: 2rem;
 }
+.clinic-info .heading{
+  font-size: 2rem;
+  
+}
+
 
 .contact-buttons {
   margin-top: 5rem;

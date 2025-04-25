@@ -28,7 +28,7 @@ export default function Home() {
         </div>
         <div className="hero-image">
           <Image src="/home.jpeg" alt="Dental clinic hero image" fill priority className="object-cover" />
-        </div>
+        </div>zz
       </section>
 
       {/* About Section */}
