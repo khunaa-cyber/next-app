@@ -1,7 +1,7 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { DoctorDashboardContent } from "./dashboard-content"
-import "../doctors/doctor.css"
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { DoctorDashboardContent } from './dashboard-content';
+import '../doctors/doctor.css';
 
 export default function DoctorDashboardPage() {
   return (
@@ -10,6 +10,5 @@ export default function DoctorDashboardPage() {
       <DoctorDashboardContent />
       <Footer />
     </>
-  )
+  );
 }
-

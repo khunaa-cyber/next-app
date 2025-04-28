@@ -1,100 +1,110 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useAuth } from "../context/auth-context"
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useAuth } from '../context/auth-context';
 
 export function HeaderWithAuthClient() {
-  const [mounted, setMounted] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Safe access to auth context after mounting
-  const auth = useAuth()
-  const { user, logout } = auth
+  const auth = useAuth();
+  const { user, logout } = auth;
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
 
     const handleScroll = () => {
       if (window.scrollY > 30) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   // Don't render anything until mounted to avoid hydration issues
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
-    <header className={`header-with-auth ${isScrolled ? "header-active" : ""}`} style={{ display: "none" }}>
-      <Link href="/" className="logo">
-        <Image src="logo.png" alt="Dental Clinic Logo" width={170} height={100} />
+    <header
+      className={`header-with-auth ${isScrolled ? 'header-active' : ''}`}
+      style={{ display: 'none' }}
+    >
+      <Link href='/' className='logo'>
+        <Image
+          src='logo.png'
+          alt='Dental Clinic Logo'
+          width={170}
+          height={100}
+        />
       </Link>
 
-      <nav className={`navbar ${isMenuOpen ? "nav-toggle" : ""}`}>
+      <nav className={`navbar ${isMenuOpen ? 'nav-toggle' : ''}`}>
         <ul>
           <li>
-            <Link href="/">Нүүр хуудас</Link>
+            <Link href='/'>Нүүр хуудас</Link>
           </li>
           <li>
-            <Link href="/services">Үйлчилгээ</Link>
+            <Link href='/services'>Үйлчилгээ</Link>
           </li>
           <li>
-            <Link href="/doctors">Эмч нар</Link>
+            <Link href='/doctors'>Эмч нар</Link>
           </li>
           <li>
-            <Link href="/blog">Мэдээ мэдээлэл</Link>
+            <Link href='/blog'>Мэдээ мэдээлэл</Link>
           </li>
           <li>
-            <Link href="/book-online">Цаг захиалах</Link>
+            <Link href='/book-online'>Цаг захиалах</Link>
           </li>
 
           {user ? (
             <>
-              {user.role === "client" && (
+              {user.role === 'client' && (
                 <li>
-                  <Link href="/my-history">Миний түүх</Link>
+                  <Link href='/my-history'>Миний түүх</Link>
                 </li>
               )}
-              {user.role === "doctor" && (
+              {user.role === 'doctor' && (
                 <li>
-                  <Link href="/doctor-dashboard">Эмчийн хэсэг</Link>
+                  <Link href='/doctor-dashboard'>Эмчийн хэсэг</Link>
                 </li>
               )}
-              {user.role === "admin" && (
+              {user.role === 'admin' && (
                 <li>
-                  <Link href="/admin-dashboard">Админ</Link>
+                  <Link href='/admin-dashboard'>Админ</Link>
                 </li>
               )}
               <li>
-                <button className="button" onClick={logout}>
+                <button className='button' onClick={logout}>
                   Гарах
                 </button>
               </li>
             </>
           ) : (
             <li>
-              <Link href="/sign">
-                <button className="button">Нэвтрэх</button>
+              <Link href='/sign'>
+                <button className='button'>Нэвтрэх</button>
               </Link>
             </li>
           )}
         </ul>
       </nav>
 
-      <div className={`fa-solid fa-bars ${isMenuOpen ? "active" : ""}`} onClick={toggleMenu}></div>
+      <div
+        className={`fa-solid fa-bars ${isMenuOpen ? 'active' : ''}`}
+        onClick={toggleMenu}
+      ></div>
     </header>
-  )
+  );
 }
-

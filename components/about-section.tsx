@@ -1,14 +1,16 @@
-import Image from "next/image"
+import Image from 'next/image';
 
 export function AboutSection() {
   return (
-    <section className="intro-section">
-      <div className="intro-content">
-        <h3 className="title">Бидний тухай</h3>
+    <section className='intro-section'>
+      <div className='intro-content'>
+        <h3 className='title'>Бидний тухай</h3>
         <p>
-          Манай шүдний эмнэлэг 2000 онд байгуулагдсан бөгөөд сүүлийн 20 гаруй жилийн хугацаанд чанартай, дэвшилтэт
-          шүдний эмчилгээг санал болгож ирсэн туршлагатай хамт олон юм. Бид олон улсын стандартад нийцсэн тоног
-          төхөөрөмж, технологийг ашиглан үйлчлүүлэгч бүрт онцгой үйлчилгээ үзүүлдэг.
+          Манай шүдний эмнэлэг 2000 онд байгуулагдсан бөгөөд сүүлийн 20 гаруй
+          жилийн хугацаанд чанартай, дэвшилтэт шүдний эмчилгээг санал болгож
+          ирсэн туршлагатай хамт олон юм. Бид олон улсын стандартад нийцсэн
+          тоног төхөөрөмж, технологийг ашиглан үйлчлүүлэгч бүрт онцгой үйлчилгээ
+          үзүүлдэг.
           <br />
           <br />
           <strong>Яагаад биднийг сонгох вэ?</strong>
@@ -19,10 +21,15 @@ export function AboutSection() {
           <br />✔ Ил тод үнийн бодлого – Нэмэлт төлбөргүй, ойлгомжтой үйлчилгээ
         </p>
       </div>
-      <div className="intro-image">
-        <Image src="/workers.png" alt="Dental clinic team" width={500} height={600} className="object-cover" />
+      <div className='intro-image'>
+        <Image
+          src='/workers.png'
+          alt='Dental clinic team'
+          width={500}
+          height={600}
+          className='object-cover'
+        />
       </div>
     </section>
-  )
+  );
 }
-

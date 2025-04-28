@@ -1,91 +1,87 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const doctorId = params.id
+    const id = params.id;
 
-    // Mock data for reviews
-    const allReviews = [
+    // Mock data for doctors
+    const doctors = [
       {
-        id: 1,
-        doctorId: "1",
-        userId: "client1",
-        userName: "Б. Баясгалан",
-        rating: 5,
-        comment: "Маш сайн эмч. Тайван, найрсаг хандлагатай, мэргэжлийн өндөр ур чадвартай.",
-        date: "2023-12-15",
+        id: '1',
+        name: 'Д. Болормаа',
+        position: 'Ерөнхий шүдний эмч',
+        experience: '15 жилийн туршлагатай',
+        education: 'АШУҮИС, Шүдний эмчилгээний тэнхим',
+        specialization: 'Шүдний ломбо, цэвэрлэгээ, яаралтай тусламж',
+        bio: 'Д. Болормаа нь 15 жилийн туршлагатай ерөнхий шүдний эмч юм. Тэрээр АШУҮИС-ийг төгссөн бөгөөд шүдний ломбо, цэвэрлэгээ, яаралтай тусламж үзүүлэх чиглэлээр мэргэшсэн. Тэрээр үйлчлүүлэгчдэд найрсаг, тайван хандлагаараа алдартай бөгөөд шүдний эмчилгээг аль болох өвдөлтгүй, тав тухтай хийхийг эрмэлздэг.',
+        image: '/images/doctor-1.jpg',
+        schedule: 'Даваа-Баасан: 09:00-17:00',
+        languages: 'Монгол, Англи',
+        services: [
+          'Шүдний цэвэрлэгээ',
+          'Шүдний ломбо',
+          'Шүдний үзлэг',
+          'Яаралтай тусламж',
+          'Шүдний өвчин оношлогоо',
+        ],
       },
       {
-        id: 2,
-        doctorId: "1",
-        userId: "client2",
-        userName: "Д. Сарангэрэл",
-        rating: 4,
-        comment: "Эмчилгээ сайн хийсэн. Цаг баримтлалт сайтай.",
-        date: "2024-01-20",
+        id: '2',
+        name: 'Б. Батбаяр',
+        position: 'Шүдний мэс засалч',
+        experience: '12 жилийн туршлагатай',
+        education: 'АШУҮИС, Шүдний мэс заслын тэнхим',
+        specialization: 'Шүдний мэс засал, имплант, эрүүний гажиг',
+        bio: 'Б. Батбаяр нь 12 жилийн туршлагатай шүдний мэс засалч юм. Тэрээр АШУҮИС-ийг төгссөн бөгөөд шүдний мэс засал, имплант, эрүүний гажиг засах чиглэлээр мэргэшсэн. Тэрээр олон улсын хурал, семинарт тогтмол оролцдог бөгөөд шүдний мэс заслын орчин үеийн аргуудыг эзэмшсэн.',
+        image: '/images/doctor-2.jpg',
+        schedule: 'Мягмар, Пүрэв: 09:00-18:00, Бямба: 10:00-14:00',
+        languages: 'Монгол, Англи, Орос',
+        services: [
+          'Шүдний мэс засал',
+          'Шүдний имплант',
+          'Эрүүний гажиг засал',
+          'Шүдний суулгац',
+          'Шүдний титэм, гүүр',
+        ],
       },
       {
-        id: 3,
-        doctorId: "2",
-        userId: "client3",
-        userName: "Г. Батболд",
-        rating: 5,
-        comment: "Хүүхдийн шүдийг маш сайн эмчилсэн. Хүүхэдтэй маш сайн харьцдаг.",
-        date: "2024-02-10",
+        id: '3',
+        name: 'Г. Оюунчимэг',
+        position: 'Шүдний гажиг засалч',
+        experience: '10 жилийн туршлагатай',
+        education: 'АШУҮИС, Шүдний гажиг заслын тэнхим',
+        specialization: 'Шүдний гажиг засал, хүүхдийн шүдний эмчилгээ',
+        bio: 'Г. Оюунчимэг нь 10 жилийн туршлагатай шүдний гажиг засалч юм. Тэрээр АШУҮИС-ийг төгссөн бөгөөд шүдний гажиг засал, хүүхдийн шүдний эмчилгээ чиглэлээр мэргэшсэн. Тэрээр хүүхдүүдтэй ажиллах онцгой ур чадвартай бөгөөд тэдний шүдний эрүүл мэндийг сайжруулахад анхаарал хандуулдаг.',
+        image: '/images/doctor-3.jpg',
+        schedule: 'Даваа, Лхагва, Баасан: 09:00-17:00',
+        languages: 'Монгол, Англи',
+        services: [
+          'Шүдний гажиг засал',
+          'Хүүхдийн шүдний эмчилгээ',
+          'Шүдний үзлэг',
+          'Урьдчилан сэргийлэх эмчилгээ',
+        ],
       },
-      {
-        id: 4,
-        doctorId: "3",
-        userId: "client4",
-        userName: "С. Оюунтуяа",
-        rating: 4,
-        comment: "Шүдний гажиг засал маш сайн хийсэн. Үр дүн нь харагдаж байна.",
-        date: "2024-03-05",
-      },
-    ]
+    ];
 
-    // Filter reviews for the specified doctor
-    const doctorReviews = allReviews.filter((review) => review.doctorId === doctorId)
+    const doctor = doctors.find((doc) => doc.id === id);
 
-    return NextResponse.json({ success: true, reviews: doctorReviews })
-  } catch (error) {
-    console.error(`Error fetching reviews for doctor with ID ${params.id}:`, error)
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
-  }
-}
-
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const doctorId = params.id
-    const body = await request.json()
-    const { userId, userName, rating, comment } = body
-
-    // Validate required fields
-    if (!userId || !userName || !rating || !comment) {
+    if (!doctor) {
       return NextResponse.json(
-        { success: false, message: "User ID, name, rating, and comment are required" },
-        { status: 400 },
-      )
+        { success: false, message: 'Doctor not found' },
+        { status: 404 }
+      );
     }
 
-    // In a real app, you would save this to a database
-    const newReview = {
-      id: Date.now(),
-      doctorId,
-      userId,
-      userName,
-      rating,
-      comment,
-      date: new Date().toISOString().split("T")[0],
-    }
-
-    return NextResponse.json({
-      success: true,
-      review: newReview,
-      message: "Review submitted successfully",
-    })
+    return NextResponse.json({ success: true, doctor });
   } catch (error) {
-    console.error(`Error submitting review for doctor with ID ${params.id}:`, error)
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
+    console.error(`Error fetching doctor with ID ${params.id}:`, error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

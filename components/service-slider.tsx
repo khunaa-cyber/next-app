@@ -1,3 +1,4 @@
+
 'use client'
 
 import React from "react"
@@ -25,18 +26,17 @@ const ServiceSlider: React.FC<ServiceSliderProps> = ({ title, images }) => {
 
   return (
     <Slider {...settings}>
-    {Array.isArray(images) && images.map((img, idx) => (
-      <Image
-        key={idx}
-        src={img}
-        alt={`${title} зураг`}
-        width={400}
-        height={250}
-        className="object-cover"
-      />
-    ))}
-  </Slider>
-  
+      {images.map((img, idx) => (
+        <Image
+          key={idx}
+          src={img}
+          alt={`${title} зураг`}
+          width={400}
+          height={250}
+          className="object-cover"
+        />
+      ))}
+    </Slider>
   )
 }
 
