@@ -170,7 +170,7 @@ export default function DoctorsPage() {
       <main className="doctors-page">
         <div className="page-banner">
           <h1>Манай эмч нар</h1>
-          <p>Салбараар шүүж харах боломжтой</p>
+          <p>Манай мэргэжлийн, туршлагатай эмч нар таны шүдний эрүүл мэндийн төлөө үйлчилнэ</p>
         </div>
 
         <section className="filter-section">
