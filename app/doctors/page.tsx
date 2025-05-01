@@ -1,7 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -36,7 +35,7 @@ export default function DoctorsPage() {
       • 2012-2017: Их зайсан – Хиймэл шүдний эмч
       • 2019: Удвал Медикал – Хүүхдийн нүүр амны эмч
       • 2020 - одоо: Кутикул Сансар – Хүүхдийн нүүр амны эмч
-    `
+    `,
     },
     {
       id: 2,
@@ -160,9 +159,7 @@ export default function DoctorsPage() {
     },
   ]
 
-  const filteredDoctors = selectedBranch
-    ? doctors.filter((d) => d.branch === selectedBranch)
-    : doctors
+  const filteredDoctors = selectedBranch ? doctors.filter((d) => d.branch === selectedBranch) : doctors
 
   return (
     <>
@@ -176,10 +173,7 @@ export default function DoctorsPage() {
         <section className="filter-section">
           <h3>Салбар сонгох:</h3>
           <div className="filter-buttons">
-            <button
-              onClick={() => setSelectedBranch("")}
-              className={selectedBranch === "" ? "active" : ""}
-            >
+            <button onClick={() => setSelectedBranch("")} className={selectedBranch === "" ? "active" : ""}>
               Бүгд
             </button>
             {branches.map((branch) => (
@@ -199,40 +193,48 @@ export default function DoctorsPage() {
             {filteredDoctors.map((doctor) => (
               <div className="doctor-card" key={doctor.id}>
                 <div className="doctor-image">
-                  <Image
-                    src={doctor.image}
-                    alt={doctor.name}
-                    width={250}
-                    height={300}
-                    className="doctor-img"
-                  />
+                  <Image src={doctor.image} alt={doctor.name} width={250} height={300} className="doctor-img" />
                 </div>
                 <div className="doctor-details">
                   <h2>{doctor.name}</h2>
                   <h3>{doctor.position}</h3>
-                  <p><strong>Туршлага:</strong> {doctor.experience}</p>
-                  <p><strong>Боловсрол:</strong> {doctor.education}</p>
-                  <p><strong>Мэргэшил:</strong> {doctor.specialization}</p>
-                  <p><strong>Ажиллаж буй салбар:</strong> {doctor.branch}</p>
+                  <p>
+                    <strong>Туршлага:</strong> {doctor.experience}
+                  </p>
+                  <p>
+                    <strong>Боловсрол:</strong> {doctor.education}
+                  </p>
+                  <p>
+                    <strong>Мэргэшил:</strong> {doctor.specialization}
+                  </p>
+                  <p>
+                    <strong>Ажиллаж буй салбар:</strong> {doctor.branch}
+                  </p>
                   <button className="button" onClick={() => toggleExpand(doctor.id)}>
-                  {expandedDoctorId === doctor.id ? "Хураах" : "Дэлгэрэнгүй"}
-                </button>
+                    {expandedDoctorId === doctor.id ? "Хураах" : "Дэлгэрэнгүй"}
+                  </button>
 
-                {expandedDoctorId === doctor.id && doctor.details && (
-                  <div className="doctor-extra">
-                    {doctor.details.split("\n").map((line, index) => (
-                      <p key={index}>{line}</p>
-                    ))}
-                    <div className="contact-info">
-                      <p><strong>Ажлын цаг:</strong> Даваа - Баасан 09:00 - 20:00</p>
-                      <p><strong>Утас:</strong> +976 - 70003931</p>
-                      <p><strong>Имэйл:</strong> info@cuticul.mn</p>
-                      <div className="social">
-                        <a href="#">Facebook</a> | <a href="#">Twitter</a> | <a href="#">Youtube</a>
+                  {expandedDoctorId === doctor.id && doctor.details && (
+                    <div className="doctor-extra">
+                      {doctor.details.split("\n").map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))}
+                      <div className="contact-info">
+                        <p>
+                          <strong>Ажлын цаг:</strong> Даваа - Баасан 09:00 - 20:00
+                        </p>
+                        <p>
+                          <strong>Утас:</strong> +976 - 70003931
+                        </p>
+                        <p>
+                          <strong>Имэйл:</strong> info@cuticul.mn
+                        </p>
+                        <div className="social">
+                          <a href="#">Facebook</a> | <a href="#">Twitter</a> | <a href="#">Youtube</a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
                 </div>
               </div>
             ))}

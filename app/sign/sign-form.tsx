@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import Link from "next/link"
 import { useAuth } from "../../context/auth-context"
 
@@ -32,10 +31,22 @@ export function SignForm() {
   }
 
   return (
-    <div className="sign-container">
+    <div>
+      <div className="header"></div>
+      <div className="return_home">
+        <a href="#">
+          <i className="fa-solid fa-arrow-left" style={{ color: "var(--main-color1)" }}></i>{" "}
+        </a>
+
+        <Link href="/" style={{ color: "var(--main-color1)" }}>
+          Нүүр хуудасруу шилжих
+        </Link>
+      </div>
+
       <div className="sign-form-container">
         <div className="sign-form-content">
-          <h1>Нэвтрэх</h1>
+          <h1 style={{ textAlign: "center" }}>Нэвтрэх</h1>
+
           <p>Та өөрийн бүртгэлтэй имэйл хаяг болон нууц үгээ оруулна уу.</p>
 
           {error && <div className="error-message">{error}</div>}
@@ -82,11 +93,11 @@ export function SignForm() {
           </div>
         </div>
       </div>
-
-      <div className="sign-image-container">
-        <Image src="/images/sign-image.jpg" alt="Dental clinic" fill className="object-cover" />
+      <div className="sign-form-container">
+        <p className="sign-form-content">
+          Өөрийн бүртгэлээ үүсгэснээр өөрийн үзлэгийн түүхийг харах боломжтой . Мөн та сэтгэгдэлээ үлдээх эрх үүснэ.{" "}
+        </p>
       </div>
     </div>
   )
 }
-

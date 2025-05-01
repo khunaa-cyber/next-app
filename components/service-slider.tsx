@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import React from "react"
+import type React from "react"
 import Slider from "react-slick"
 import Image from "next/image"
 
@@ -20,20 +20,13 @@ const ServiceSlider: React.FC<ServiceSliderProps> = ({ title, images }) => {
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000
+    autoplaySpeed: 3000,
   }
 
   return (
     <Slider {...settings}>
       {images.map((img, idx) => (
-        <Image
-          key={idx}
-          src={img}
-          alt={`${title} зураг`}
-          width={400}
-          height={250}
-          className="object-cover"
-        />
+        <Image key={idx} src={img} alt={`${title} зураг`} width={400} height={250} className="object-cover" />
       ))}
     </Slider>
   )

@@ -13,17 +13,25 @@ type AuthContextType = {
   user: User | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const defaultContextValue: AuthContextType = {
+  user: null,
+  isLoading: true,
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+}
+
+const AuthContext = createContext<AuthContextType>(defaultContextValue)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is stored in localStorage
     try {
       const storedUser = localStorage.getItem("dental_user")
       if (storedUser) {
@@ -39,10 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
 
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // Mock users for demo
     const mockUsers = [
       { id: "1", name: "Client User", email: "client@example.com", password: "password", role: "client" as const },
       { id: "2", name: "Doctor User", email: "doctor@example.com", password: "password", role: "doctor" as const },
@@ -66,6 +72,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }
 
+  const register = async (name: string, email: string, password: string) => {
+    setIsLoading(true)
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+
+    const newUser = {
+      id: Date.now().toString(),
+      name,
+      email,
+      role: "client" as const,
+    }
+
+    setUser(newUser)
+
+    try {
+      localStorage.setItem("dental_user", JSON.stringify(newUser))
+    } catch (error) {
+      console.error("Error setting localStorage:", error)
+    }
+
+    setIsLoading(false)
+  }
+
   const logout = () => {
     setUser(null)
     try {
@@ -75,14 +105,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, login, logout }}>{children}</AuthContext.Provider>
+  const contextValue: AuthContextType = {
+    user,
+    isLoading,
+    login,
+    register,
+    logout,
+  }
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }
-

@@ -1,4 +1,3 @@
-/* Services page styles */
 .services-page {
   padding-top: 13rem;
 }
@@ -80,6 +79,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
