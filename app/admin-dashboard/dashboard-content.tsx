@@ -8,8 +8,11 @@ export function AdminDashboardContent() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState(null);
+  const [recentAppointments, setRecentAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [services, setServices] = useState([]);
 
-  // Only access auth after component is mounted
   const auth = useAuth();
   const { user, isLoading } = auth;
 
@@ -27,6 +30,34 @@ export function AdminDashboardContent() {
     }
   }, [user, isLoading, router, mounted]);
 
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      fetchData();
+    }
+  }, [user]);
+
+  async function fetchData() {
+    try {
+      const statsResponse = await fetch('/api/admin/stats');
+      const statsData = await statsResponse.json();
+      setStats(statsData);
+
+      const appointmentsResponse = await fetch('/api/admin/appointments');
+      const appointmentsData = await appointmentsResponse.json();
+      setRecentAppointments(appointmentsData);
+
+      const doctorsResponse = await fetch('/api/admin/doctors');
+      const doctorsData = await doctorsResponse.json();
+      setDoctors(doctorsData);
+
+      const servicesResponse = await fetch('/api/admin/services');
+      const servicesData = await servicesResponse.json();
+      setServices(servicesData);
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+    }
+  }
+
   if (!mounted || isLoading) {
     return (
       <div className='loading-container'>
@@ -39,127 +70,6 @@ export function AdminDashboardContent() {
   if (!user || user.role !== 'admin') {
     return null;
   }
-
-  const stats = {
-    appointments: 125,
-    patients: 450,
-    doctors: 6,
-    revenue: '12,500,000₮',
-  };
-
-  const recentAppointments = [
-    {
-      id: 1,
-      date: '2024-04-05',
-      time: '09:00',
-      patient: 'Б. Баясгалан',
-      doctor: 'Д. Болормаа',
-      service: 'Шүдний үзлэг',
-      status: 'Хүлээгдэж буй',
-    },
-    {
-      id: 2,
-      date: '2024-04-05',
-      time: '10:30',
-      patient: 'Д. Сарангэрэл',
-      doctor: 'Б. Батбаяр',
-      service: 'Шүдний ломбо',
-      status: 'Хүлээгдэж буй',
-    },
-    {
-      id: 3,
-      date: '2024-04-05',
-      time: '13:00',
-      patient: 'Г. Батболд',
-      doctor: 'Д. Болормаа',
-      service: 'Шүдний цэвэрлэгээ',
-      status: 'Хүлээгдэж буй',
-    },
-  ];
-
-  const doctors = [
-    {
-      id: 1,
-      name: 'Д. Болормаа',
-      position: 'Ерөнхий шүдний эмч',
-      appointments: 45,
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: 'Б. Батбаяр',
-      position: 'Шүдний мэс засалч',
-      appointments: 38,
-      rating: 4.9,
-    },
-    {
-      id: 3,
-      name: 'Г. Оюунчимэг',
-      position: 'Шүдний гажиг засалч',
-      appointments: 42,
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: 'Н. Энхбаяр',
-      position: 'Шүдний эмч',
-      appointments: 35,
-      rating: 4.6,
-    },
-    {
-      id: 5,
-      name: 'С. Мөнхзул',
-      position: 'Хүүхдийн шүдний эмч',
-      appointments: 40,
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      name: 'Д. Ганбаатар',
-      position: 'Шүдний эмч',
-      appointments: 37,
-      rating: 4.7,
-    },
-  ];
-
-  const services = [
-    {
-      id: 1,
-      name: 'Шүдний цэвэрлэгээ',
-      price: '50,000₮',
-      appointments: 65,
-    },
-    {
-      id: 2,
-      name: 'Шүдний ломбо',
-      price: '80,000₮',
-      appointments: 48,
-    },
-    {
-      id: 3,
-      name: 'Шүдний суулгац',
-      price: '1,500,000₮',
-      appointments: 12,
-    },
-    {
-      id: 4,
-      name: 'Шүдний гажиг засал',
-      price: '2,000,000₮',
-      appointments: 18,
-    },
-    {
-      id: 5,
-      name: 'Шүдний цайралт',
-      price: '250,000₮',
-      appointments: 25,
-    },
-    {
-      id: 6,
-      name: 'Хүүхдийн шүдний эмчилгээ',
-      price: '40,000₮',
-      appointments: 30,
-    },
-  ];
 
   return (
     <main className='admin-dashboard-page'>
@@ -225,7 +135,7 @@ export function AdminDashboardContent() {
         </div>
 
         <div className='dashboard-main'>
-          {activeTab === 'overview' && (
+          {activeTab === 'overview' && stats && (
             <div className='overview-section'>
               <div className='stats-cards'>
                 <div className='stat-card'>
@@ -305,7 +215,7 @@ export function AdminDashboardContent() {
             <div className='doctors-section'>
               <div className='section-header'>
                 <h2>Эмч нар</h2>
-                <button className='button'>Эмч нэмэх</button>
+                <button className='button' onClick={() => {}} >Эмч нэмэх</button>
               </div>
 
               <div className='doctors-list'>

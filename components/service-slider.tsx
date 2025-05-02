@@ -1,10 +1,8 @@
-
 'use client'
 
 import React from "react"
 import Slider from "react-slick"
 import Image from "next/image"
-
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 
@@ -40,4 +38,4 @@ const ServiceSlider: React.FC<ServiceSliderProps> = ({ title, images }) => {
   )
 }
 
-export default ServiceSlider
+export default React.memo(ServiceSlider)

@@ -1,51 +1,19 @@
 import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const client = await dbConnect();
+    const db = client.db('khunaa'); // Replace with your actual database name
 
-    // Mock data for users
-    const users = [
-      {
-        id: '1',
-        name: 'Client User',
-        email: 'client@example.com',
-        role: 'client',
-        phone: '99887766',
-        address: 'Баянзүрх дүүрэг, 13-р хороолол',
-        birthdate: '1990-01-01',
-        gender: 'Эрэгтэй',
-        allergies: 'Байхгүй',
-        bloodType: 'A+',
-      },
-      {
-        id: '2',
-        name: 'Doctor User',
-        email: 'doctor@example.com',
-        role: 'doctor',
-        phone: '99112233',
-        address: 'Сүхбаатар дүүрэг, 1-р хороо',
-        birthdate: '1985-05-15',
-        gender: 'Эмэгтэй',
-        specialization: 'Шүдний эмч',
-        experience: '10 жил',
-      },
-      {
-        id: '3',
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'admin',
-        phone: '99445566',
-        address: 'Хан-Уул дүүрэг, 2-р хороо',
-        birthdate: '1982-08-20',
-        gender: 'Эрэгтэй',
-      },
-    ];
-
-    const user = users.find((u) => u.id === id);
+    // Fetch the user by ID
+    const user = await db
+      .collection('users')
+      .findOne({ _id: new ObjectId(params.id) });
 
     if (!user) {
       return NextResponse.json(
@@ -69,15 +37,26 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const client = await dbConnect();
+    const db = client.db('khunaa'); // Replace with your actual database name
+
     const id = params.id;
     const body = await request.json();
 
-    // In a real app, you would update the user in the database
-    // For now, we'll just return the updated user
+    // Update the user in the database
+    const result = await db
+      .collection('users')
+      .updateOne({ _id: new ObjectId(id) }, { $set: body });
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      user: { id, ...body },
       message: 'User profile updated successfully',
     });
   } catch (error) {

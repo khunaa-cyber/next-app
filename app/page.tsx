@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import dbConnect from '@/lib/mongodb';
 import { TestimonialSlider } from '@/components/testimonial-slider';
 import { FacilitySlider } from '@/components/facility-slider';
 import { StatsSection } from '@/components/stats-section';
@@ -9,7 +10,24 @@ import { ContactSection } from '@/components/contact-section';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
-export default function Home() {
+async function fetchUsers() {
+  try {
+    const client = await dbConnect(); // Ensure dbConnect is properly typed to return a MongoDB client
+    if (!client) {
+      throw new Error('Failed to connect to the database');
+    }
+    const db = client.db('khunaa'); // Replace with your actual database name
+    const users = await db.collection('users').find().toArray();
+    return JSON.parse(JSON.stringify(users)); // Serialize MongoDB data
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const users = await fetchUsers();
+
   return (
     <main className='home-page'>
       <Header />
@@ -72,6 +90,18 @@ export default function Home() {
       <ContactSection />
 
       <Footer />
+
+      {/* Example: Render fetched users */}
+      <section className='users-section'>
+        <h2>Users</h2>
+        <ul>
+          {users.map((user: any) => (
+            <li key={user._id}>
+              {user.name} - {user.email}
+            </li>
+          ))}
+        </ul>
+      </section>
     </main>
   );
 }
