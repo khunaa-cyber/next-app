@@ -45,7 +45,7 @@ export function ClientHeader() {
             <Link href="/doctors">Эмч нар</Link>
           </li>
           <li>
-            <Link href="#">Мэдээ мэдээлэл</Link>
+            <Link href="/blog">Мэдээ мэдээлэл</Link>
           </li>
           <li>
             <Link href="/book-online">Цаг захиалах</Link>
@@ -76,7 +76,7 @@ export function ClientHeader() {
             </>
           ) : (
             <li>
-              <Link href="#">
+              <Link href="/sign">
                 <button className="button">Нэвтрэх</button>
               </Link>
             </li>
