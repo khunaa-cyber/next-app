@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     method,
   } = req;
 
-  await dbConnect();
+  await dbConnect;
 
   switch (method) {
     case 'PUT':

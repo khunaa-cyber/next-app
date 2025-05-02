@@ -14,7 +14,6 @@ type AuthContextType = {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
 
@@ -27,15 +26,6 @@ const defaultContextValue: AuthContextType = {
   logout: () => {},
 }
 
-// Initialize the context with the default value
-const AuthContext = createContext<AuthContextType>(defaultContextValue)
-const defaultContextValue: AuthContextType = {
-  user: null,
-  isLoading: true,
-  login: async () => {},
-  register: async () => {},
-  logout: () => {},
-}
 
 const AuthContext = createContext<AuthContextType>(defaultContextValue)
 
@@ -84,31 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }
 
-  const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // In a real app, you would send this data to your backend
-    // For demo purposes, we'll just create a new user locally
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role: "client" as const,
-    }
-
-    setUser(newUser)
-
-    try {
-      localStorage.setItem("dental_user", JSON.stringify(newUser))
-    } catch (error) {
-      console.error("Error setting localStorage:", error)
-    }
-
-    setIsLoading(false)
-  }
 
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true)
@@ -143,30 +109,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Create the context value object with the current state and functions
-  const contextValue: AuthContextType = {
+
+  const contextValue = {
     user,
     isLoading,
     login,
     register,
     logout,
   }
-
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  const contextValue: AuthContextType = {
-    user,
-    isLoading,
-    login,
-    register,
-    logout,
-  }
-
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  return (  <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>)
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider")
   }

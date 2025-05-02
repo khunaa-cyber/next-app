@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const client = await dbConnect();
+    const client = await dbConnect;
     const db = client.db('khunaa'); // Replace with your actual database name
 
     // Fetch the service by ID from the database

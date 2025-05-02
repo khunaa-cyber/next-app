@@ -4,7 +4,7 @@ import Item from '@/models/Item';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  const client = await dbConnect();
+  const client = await dbConnect;
   const db = client.db();
 
   const { method }: { method?: string } = req;
