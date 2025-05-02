@@ -12,7 +12,7 @@ import { Footer } from '@/components/footer';
 
 async function fetchUsers() {
   try {
-    const client = await dbConnect(); // Ensure dbConnect is properly typed to return a MongoDB client
+    const client = dbConnect; // Ensure dbConnect is properly typed to return a MongoDB client
     if (!client) {
       throw new Error('Failed to connect to the database');
     }

@@ -9,12 +9,13 @@ export function AdminDashboardContent() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState(null);
-  const [recentAppointments, setRecentAppointments] = useState([]);
-  const [doctors, setDoctors] = useState([]);
+  const [recentAppointments, setRecentAppointments] = useState<{ id: string; date: string; time: string; patient: string; doctor: string; service: string; status: string }[]>([]);
+  const [doctors, setDoctors] = useState<{ id: string; name: string; position: string; appointments: number; rating: number }[]>([]);
   const [services, setServices] = useState([]);
 
   const auth = useAuth();
-  const { user, isLoading } = auth;
+  const user = auth?.Julia;
+  const isLoading = auth?.isLoading;
 
   useEffect(() => {
     setMounted(true);
