@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import User from "@/models/User"
+import crypto from "crypto"
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase()
+
     const body = await request.json()
     const { email } = body
 
@@ -9,10 +14,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Email is required" }, { status: 400 })
     }
 
-    // In a real app, you would:
-    // 1. Check if the email exists in your database
-    // 2. Generate a password reset token
-    // 3. Send an email with a reset link
+    // hereglegchiig emailer haih
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        message: "Password reset instructions have been sent to your email if it exists in our system",
+      })
+    }
+
+    // nuuts ug shinechleh token uusgeh
+    const resetToken = crypto.randomBytes(32).toString("hex")
+    const resetTokenExpiry = Date.now() + 3600000 // 1 tsag
+
+    // tokenig hereglegchiin medeeleld hadgalah
+    user.resetToken = resetToken
+    user.resetTokenExpiry = resetTokenExpiry
+    await user.save()
+
+    // email ilgeeh code end bn
+    // jishee: await sendPasswordResetEmail(user.email, resetToken)
 
     return NextResponse.json({
       success: true,

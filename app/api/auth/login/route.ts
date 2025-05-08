@@ -1,26 +1,40 @@
 import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import User from "@/models/User"
+import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase()
+
     const body = await request.json()
     const { email, password } = body
 
-    // Mock authentication logic
-    // In a real app, you would validate against a database
-    const mockUsers = [
-      { id: "1", name: "Client User", email: "client@example.com", password: "password", role: "client" },
-      { id: "2", name: "Doctor User", email: "doctor@example.com", password: "password", role: "doctor" },
-      { id: "3", name: "Admin User", email: "admin@example.com", password: "password", role: "admin" },
-    ]
+    // email password shalgah
+    if (!email || !password) {
+      return NextResponse.json({ success: false, message: "Email and password are required" }, { status: 400 })
+    }
 
-    const user = mockUsers.find((u) => u.email === email && u.password === password)
+    // hereglegch haih
+    const user = await User.findOne({ email })
 
     if (!user) {
       return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
     }
 
-    // Don't send password back to client
-    const { password: _, ...userWithoutPassword } = user
+    // password shalgah
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordValid) {
+      return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
+    }
+
+    const userWithoutPassword = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }
 
     return NextResponse.json({
       success: true,

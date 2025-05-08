@@ -1,53 +1,27 @@
 import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import Review from "@/models/Review"
+import Doctor from "@/models/Doctor"
+import mongoose from "mongoose"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    await connectToDatabase()
+
     const doctorId = params.id
 
-    // Mock data for reviews
-    const allReviews = [
-      {
-        id: 1,
-        doctorId: "1",
-        userId: "client1",
-        userName: "Б. Баясгалан",
-        rating: 5,
-        comment: "Маш сайн эмч. Тайван, найрсаг хандлагатай, мэргэжлийн өндөр ур чадвартай.",
-        date: "2023-12-15",
-      },
-      {
-        id: 2,
-        doctorId: "1",
-        userId: "client2",
-        userName: "Д. Сарангэрэл",
-        rating: 4,
-        comment: "Эмчилгээ сайн хийсэн. Цаг баримтлалт сайтай.",
-        date: "2024-01-20",
-      },
-      {
-        id: 3,
-        doctorId: "2",
-        userId: "client3",
-        userName: "Г. Батболд",
-        rating: 5,
-        comment: "Хүүхдийн шүдийг маш сайн эмчилсэн. Хүүхэдтэй маш сайн харьцдаг.",
-        date: "2024-02-10",
-      },
-      {
-        id: 4,
-        doctorId: "3",
-        userId: "client4",
-        userName: "С. Оюунтуяа",
-        rating: 4,
-        comment: "Шүдний гажиг засал маш сайн хийсэн. Үр дүн нь харагдаж байна.",
-        date: "2024-03-05",
-      },
-    ]
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return NextResponse.json({ success: false, message: "Invalid doctor ID" }, { status: 400 })
+    }
 
-    // Filter reviews for the specified doctor
-    const doctorReviews = allReviews.filter((review) => review.doctorId === doctorId)
+    const doctor = await Doctor.findById(doctorId)
+    if (!doctor) {
+      return NextResponse.json({ success: false, message: "Doctor not found" }, { status: 404 })
+    }
 
-    return NextResponse.json({ success: true, reviews: doctorReviews })
+    const reviews = await Review.find({ doctorId }).populate("userId", "name email")
+
+    return NextResponse.json({ success: true, reviews })
   } catch (error) {
     console.error(`Error fetching reviews for doctor with ID ${params.id}:`, error)
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
@@ -56,11 +30,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
+    await connectToDatabase()
+
     const doctorId = params.id
     const body = await request.json()
     const { userId, userName, rating, comment } = body
 
-    // Validate required fields
     if (!userId || !userName || !rating || !comment) {
       return NextResponse.json(
         { success: false, message: "User ID, name, rating, and comment are required" },
@@ -68,16 +43,25 @@ export async function POST(request: Request, { params }: { params: { id: string 
       )
     }
 
-    // In a real app, you would save this to a database
-    const newReview = {
-      id: Date.now(),
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return NextResponse.json({ success: false, message: "Invalid doctor ID" }, { status: 400 })
+    }
+
+    const doctor = await Doctor.findById(doctorId)
+    if (!doctor) {
+      return NextResponse.json({ success: false, message: "Doctor not found" }, { status: 404 })
+    }
+
+    const newReview = new Review({
       doctorId,
       userId,
       userName,
       rating,
       comment,
       date: new Date().toISOString().split("T")[0],
-    }
+    })
+
+    await newReview.save()
 
     return NextResponse.json({
       success: true,

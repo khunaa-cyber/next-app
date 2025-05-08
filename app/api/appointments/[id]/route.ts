@@ -1,40 +1,23 @@
 import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import Appointment from "@/models/Appointment"
+import mongoose from "mongoose"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
+    await connectToDatabase()
 
-    const appointments = [
-      {
-        id: 1,
-        userId: "1",
-        date: "2023-11-15",
-        time: "10:00",
-        doctorId: "1",
-        doctorName: "Д. Болормаа",
-        service: "Шүдний цэвэрлэгээ",
-        status: "Дууссан",
-        cost: "50,000₮",
-        notes: "Дараагийн 6 сарын дараа шүдний цэвэрлэгээ хийлгэхийг зөвлөсөн",
-        diagnosis: "Шүдний өнгөлгөө хийгдсэн",
-      },
-      {
-        id: 2,
-        userId: "1",
-        date: "2023-12-20",
-        time: "14:30",
-        doctorId: "2",
-        doctorName: "Б. Батбаяр",
-        service: "Шүдний ломбо",
-        status: "Дууссан",
-        cost: "85,000₮",
-        notes: "Хатуу хоол идэхээс зайлсхийх",
-        diagnosis: "36-р шүдний цоорол",
-      },
-      
-    ]
+    const id = params.id
 
-    const appointment = appointments.find((a) => a.id === id)
+    // ID huchintei esehiig shalgah
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid appointment ID" }, { status: 400 })
+    }
+
+    // db-es medeelel avah
+    const appointment = await Appointment.findById(id)
+      .populate("userId", "name email phone")
+      .populate("doctorId", "name position")
 
     if (!appointment) {
       return NextResponse.json({ success: false, message: "Appointment not found" }, { status: 404 })
@@ -49,15 +32,30 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
+    await connectToDatabase()
+
+    const id = params.id
     const body = await request.json()
-    const { status } = body
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid appointment ID" }, { status: 400 })
+    }
 
+    // medeelliig shinechleh
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      { ...body, updatedAt: Date.now() },
+      { new: true, runValidators: true },
+    )
+
+    if (!updatedAppointment) {
+      return NextResponse.json({ success: false, message: "Appointment not found" }, { status: 404 })
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Appointment ${id} status updated to ${status}`,
+      appointment: updatedAppointment,
+      message: "Appointment updated successfully",
     })
   } catch (error) {
     console.error(`Error updating appointment with ID ${params.id}:`, error)
@@ -67,13 +65,28 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
+    await connectToDatabase()
 
-   
+    const id = params.id
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid appointment ID" }, { status: 400 })
+    }
+
+    // tsag zahialgiin statusiig oorchloh-tsutslah
+    const cancelledAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      { status: "Цуцалсан", updatedAt: Date.now() },
+      { new: true },
+    )
+
+    if (!cancelledAppointment) {
+      return NextResponse.json({ success: false, message: "Appointment not found" }, { status: 404 })
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Appointment ${id} cancelled successfully`,
+      message: "Appointment cancelled successfully",
     })
   } catch (error) {
     console.error(`Error cancelling appointment with ID ${params.id}:`, error)

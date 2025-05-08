@@ -1,7 +1,6 @@
 // Base API URL
 const API_BASE_URL = "/api"
 
-// Generic fetch function with error handling
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options)

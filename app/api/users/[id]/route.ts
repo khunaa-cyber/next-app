@@ -1,48 +1,20 @@
 import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import User from "@/models/User"
+import mongoose from "mongoose"
+import bcrypt from "bcryptjs"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    await connectToDatabase()
+
     const id = params.id
 
-    // Mock data for users
-    const users = [
-      {
-        id: "1",
-        name: "Client User",
-        email: "client@example.com",
-        role: "client",
-        phone: "99887766",
-        address: "Баянзүрх дүүрэг, 13-р хороолол",
-        birthdate: "1990-01-01",
-        gender: "Эрэгтэй",
-        allergies: "Байхгүй",
-        bloodType: "A+",
-      },
-      {
-        id: "2",
-        name: "Doctor User",
-        email: "doctor@example.com",
-        role: "doctor",
-        phone: "99112233",
-        address: "Сүхбаатар дүүрэг, 1-р хороо",
-        birthdate: "1985-05-15",
-        gender: "Эмэгтэй",
-        specialization: "Шүдний эмч",
-        experience: "10 жил",
-      },
-      {
-        id: "3",
-        name: "Admin User",
-        email: "admin@example.com",
-        role: "admin",
-        phone: "99445566",
-        address: "Хан-Уул дүүрэг, 2-р хороо",
-        birthdate: "1982-08-20",
-        gender: "Эрэгтэй",
-      },
-    ]
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid user ID" }, { status: 400 })
+    }
 
-    const user = users.find((u) => u.id === id)
+    const user = await User.findById(id).select("-password -resetToken -resetTokenExpiry")
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
@@ -57,15 +29,33 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    await connectToDatabase()
+
     const id = params.id
     const body = await request.json()
 
-    // In a real app, you would update the user in the database
-    // For now, we'll just return the updated user
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, message: "Invalid user ID" }, { status: 400 })
+    }
+
+    if (body.password) {
+      const salt = await bcrypt.genSalt(10)
+      body.password = await bcrypt.hash(body.password, salt)
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { ...body, updatedAt: Date.now() },
+      { new: true, runValidators: true },
+    ).select("-password -resetToken -resetTokenExpiry")
+
+    if (!updatedUser) {
+      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
+    }
 
     return NextResponse.json({
       success: true,
-      user: { id, ...body },
+      user: updatedUser,
       message: "User profile updated successfully",
     })
   } catch (error) {
