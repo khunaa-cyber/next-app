@@ -5,8 +5,19 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { useAuth } from "@/context/auth-context"
-import { doctorsAPI, servicesAPI, appointmentsAPI } from "@/lib/api"
+import { appointmentsAPI } from "@/lib/api"
 import "./book-online.css"
+
+type Service = {
+  id: string
+  name: string
+}
+
+type Doctor = {
+  id: string
+  name: string
+  specialty: string
+}
 
 export default function BookOnlinePage() {
   const searchParams = useSearchParams()
@@ -30,39 +41,46 @@ export default function BookOnlinePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [services, setServices] = useState([])
-  const [doctors, setDoctors] = useState([])
+  const [services, setServices] = useState<Service[]>([])
+  const [doctors, setDoctors] = useState<Doctor[]>([])
   const [error, setError] = useState("")
 
-  // Fetch services and doctors
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        // Fetch services
-        const servicesResponse = await servicesAPI.getAll()
-        if (servicesResponse.success) {
+        const servicesRes = await fetch("/api/services")
+        const servicesData = await servicesRes.json() as {
+          success: boolean
+          services: { _id: string; title: string }[]
+        }
+
+        if (servicesData.success) {
           setServices(
-            servicesResponse.services.map((service: { id: { toString: () => any }; title: any }) => ({
-              id: service.id.toString(),
-              name: service.title,
-            })),
+            servicesData.services.map((s) => ({
+              id: s._id,
+              name: s.title,
+            }))
           )
         }
 
-        // Fetch doctors
-        const doctorsResponse = await doctorsAPI.getAll()
-        if (doctorsResponse.success) {
+        const doctorsRes = await fetch("/api/doctors")
+        const doctorsData = await doctorsRes.json() as {
+          success: boolean
+          doctors: { id: string; name: string; position: string }[]
+        }
+
+        if (doctorsData.success) {
           setDoctors(
-            doctorsResponse.doctors.map((doctor: { id: any; name: any; position: any }) => ({
-              id: doctor.id,
-              name: doctor.name,
-              specialty: doctor.position,
-            })),
+            doctorsData.doctors.map((d) => ({
+              id: d.id,
+              name: d.name,
+              specialty: d.position,
+            }))
           )
         }
-      } catch (error) {
-        console.error("Error fetching data:", error)
+      } catch (err) {
+        console.error("Fetch error:", err)
         setError("Мэдээлэл ачааллахад алдаа гарлаа. Дахин оролдоно уу.")
       } finally {
         setIsLoading(false)
@@ -72,7 +90,6 @@ export default function BookOnlinePage() {
     fetchData()
   }, [])
 
-  // Update form data when user changes
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -83,40 +100,23 @@ export default function BookOnlinePage() {
     }
   }, [user])
 
-  const availableTimes = [
-    "09:00",
-    "10:00",
-    "11:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    
-  ]
+  const availableTimes = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"]
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const nextStep = () => {
-    setStep((prev) => prev + 1)
-  }
+  const nextStep = () => setStep((prev) => prev + 1)
+  const prevStep = () => setStep((prev) => prev - 1)
 
-  const prevStep = () => {
-    setStep((prev) => prev - 1)
-  }
-
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setError("")
 
     try {
       if (!user) {
-        // Redirect to sign in if not logged in
         router.push("/sign?redirect=book-online")
         return
       }
@@ -127,38 +127,19 @@ export default function BookOnlinePage() {
         date: formData.date,
         time: formData.time,
         service: services.find((s) => s.id === formData.service)?.name || "",
-      })
+      }) as { success: boolean; message?: string }
 
       if (response.success) {
         setIsSuccess(true)
       } else {
-        setError(response.message || "Цаг захиалахад алдаа гарлаа. Дахин оролдоно уу.")
+        setError(response.message || "Цаг захиалахад алдаа гарлаа.")
       }
-    } catch (error) {
-      console.error("Error booking appointment:", error)
-      setError("Цаг захиалахад алдаа гарлаа. Дахин оролдоно уу.")
+    } catch (err) {
+      console.error("Appointment error:", err)
+      setError("Цаг захиалахад алдаа гарлаа.")
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <>
-        <Header />
-        <main className="book-online-page">
-          <div className="page-banner">
-            <h1>Цаг захиалах</h1>
-            <p>Та доорх маягтыг бөглөн цаг захиалах боломжтой</p>
-          </div>
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Уншиж байна...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    )
   }
 
   return (

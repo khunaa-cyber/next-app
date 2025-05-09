@@ -20,7 +20,7 @@ export default function ServicesPage() {
   
       const data = response as ApiResponse;
   
-      if (data.success) {
+      if (data.success && data.services) {
         setServices(data.services);
       } else {
         console.error("Failed to fetch services:", data.message);
@@ -30,7 +30,7 @@ export default function ServicesPage() {
     }
   }, []);
 
-  useEffect(() => {
+  useEffect(() => { 
     fetchServices()
   }, [fetchServices])
 
@@ -46,7 +46,7 @@ export default function ServicesPage() {
         <section className="services-list">
           <div className="services-grid">
             {services.map((service) => (
-              <div className="service-card" key={service.id}>
+              <div className="service-card" key={service._id}>
                 <div className="service-image">
                   {service.images ? (
                     <ServiceSlider title={service.title} images={service.images} />
