@@ -372,36 +372,53 @@ async function seedDatabase() {
       },
     ]
 
-    await Doctor.deleteMany(); // Хуучин өгөгдлийг цэвэрлэх (сонголттой)
-    await Doctor.insertMany(doctors);
-    console.log("Эмч нар амжилттай нэмэгдлээ");
+    // Ensure doctors are added only if they do not exist already
+    for (const doctor of doctors) {
+      const existingDoctor = await Doctor.findOne({ name: doctor.name })
+      if (!existingDoctor) {
+        await Doctor.create(doctor)
+        console.log(`Doctor ${doctor.name} added successfully`)
+      } else {
+        console.log(`Doctor ${doctor.name} already exists`)
+      }
+    }
 
-    await Service.deleteMany(); // Сонголттой
-    await Service.insertMany(services);
-    console.log("Үйлчилгээ амжилттай нэмэгдлээ");
+    // Similarly for services
+    for (const service of services) {
+      const existingService = await Service.findOne({ title: service.title })
+      if (!existingService) {
+        await Service.create(service)
+        console.log(`Service ${service.title} added successfully`)
+      } else {
+        console.log(`Service ${service.title} already exists`)
+      }
+    }
 
-    process.exit(); // Скрипт амжилттай дууссан
+    // Similarly for FAQs
+    for (const faq of faqData) {
+      const existingFAQ = await FAQ.findOne({ question: faq.question })
+      if (!existingFAQ) {
+        await FAQ.create(faq)
+        console.log(`FAQ added successfully`)
+      } else {
+        console.log(`FAQ already exists`)
+      }
+    }
 
-  //   console.log("Clearing existing data...")
-  //   await Doctor.deleteMany({})
-  //   await Service.deleteMany({})
-  //   await FAQ.deleteMany({})
-  //   await User.deleteMany({})
+    // Similarly for Users
+    for (const user of users) {
+      const existingUser = await User.findOne({ email: user.email })
+      if (!existingUser) {
+        await User.create(user)
+        console.log(`User ${user.email} added successfully`)
+      } else {
+        console.log(`User ${user.email} already exists`)
+      }
+    }
 
-  //   console.log("Inserting new data...")
-  //   await Doctor.insertMany(doctors)
-  //   await Service.insertMany(services)
-  //   await FAQ.insertMany(faqItems)
-  //   await User.insertMany(users)
-
-  //   console.log("Database seeded successfully")
-  //   process.exit(0)
-  // } catch (error) {
-  //   console.error("Error seeding database:", error)
-  //   process.exit(1)
+    console.log("Seeding process complete!")
   } catch (error) {
-    console.error("Error seeding database:", error);
-    process.exit(1);
+    console.error("Error seeding database:", error)
   }
 }
 

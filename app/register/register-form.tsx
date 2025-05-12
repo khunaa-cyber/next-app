@@ -2,11 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { useAuth } from "../../context/auth-context"
+import { servicesAPI } from "@/lib/api"
+import { useState, useEffect, useCallback } from "react"
+import { ApiResponse } from '../api/services/route';
 
 export default function RegisterForm() {
   const [name, setName] = useState("")

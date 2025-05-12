@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+
 import "./doctor.css"
 
 export default function DoctorsPage() {
