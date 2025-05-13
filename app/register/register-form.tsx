@@ -2,13 +2,11 @@
 
 import type React from "react"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import Link from "next/link"
 import { useAuth } from "../../context/auth-context"
-import { servicesAPI } from "@/lib/api"
-import { useState, useEffect, useCallback } from "react"
-import { ApiResponse } from '../api/services/route';
+import { authAPI } from "../../lib/api"
 
 export default function RegisterForm() {
   const [name, setName] = useState("")
@@ -38,9 +36,24 @@ export default function RegisterForm() {
     setIsLoading(true)
 
     try {
-      await register(name, email, password)
-      router.push("/")
+      // Method 1: Using authAPI directly (this directly calls the API endpoint)
+      console.log("Registering user with authAPI:", { name, email })
+      const response = await authAPI.register(name, email, password)
+
+      if (response.success) {
+        console.log("Registration successful via API")
+        router.push("/sign")
+      } else {
+        console.error("Registration failed:", response.message)
+        setError(response.message || "Бүртгэл үүсгэхэд алдаа гарлаа.")
+      }
+
+      // Method 2: Using auth context (uncomment this if you prefer using context)
+      // This also calls the API but through the context
+      // await register(name, email, password)
+      // router.push("/sign")
     } catch (err) {
+      console.error("Registration error:", err)
       setError("Бүртгэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.")
     } finally {
       setIsLoading(false)
@@ -52,9 +65,11 @@ export default function RegisterForm() {
       <div className="header"></div>
       <div className="return_home">
         <a href="#">
-          <i className="fa-solid fa-arrow-left" style={{ color: 'var(--main-color1)' }}></i>          </a>
-
-        <Link href="/" style={{ color: 'var(--main-color1)' }}>Нүүр хуудасруу шилжих</Link>
+          <i className="fa-solid fa-arrow-left" style={{ color: "var(--main-color1)" }}></i>
+        </a>
+        <Link href="/" style={{ color: "var(--main-color1)" }}>
+          Нүүр хуудасруу шилжих
+        </Link>
       </div>
 
       <div className="sign-form-container">
@@ -109,10 +124,6 @@ export default function RegisterForm() {
           </div>
         </div>
       </div>
-      
-
-
     </div>
-  
   )
 }

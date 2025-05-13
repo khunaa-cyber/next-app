@@ -10,6 +10,7 @@ import ServiceSlider from "@/components/service-slider"
 import { useState, useEffect, useCallback } from "react"
 import { ApiResponse } from '../api/services/route';
 
+
 export default function ServicesPage() {
   const [expandedServiceId, setExpandedServiceId] = useState<number | null>(null)
   const [services, setServices] = useState<any[]>([])
@@ -17,9 +18,9 @@ export default function ServicesPage() {
   const fetchServices = useCallback(async () => {
     try {
       const response: unknown = await servicesAPI.getAll();
-  
+
       const data = response as ApiResponse;
-  
+
       if (data.success && data.services) {
         setServices(data.services);
       } else {
@@ -30,7 +31,7 @@ export default function ServicesPage() {
     }
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchServices()
   }, [fetchServices])
 
@@ -83,6 +84,7 @@ export default function ServicesPage() {
             ))}
           </div>
         </section>
+     
 
         <section className="service-cta">
           <div className="cta-content">

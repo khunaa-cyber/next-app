@@ -1,69 +1,37 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import "./blog.css"
+import {newsAPI } from "@/lib/api"
+import { useState, useEffect, useCallback } from "react"
+import { ApiResponse } from '../api/news/route';
 
-export default function BlogPage() {
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Шүдээ зөв угаах арга",
-      excerpt:
-        "Шүдээ зөв угаах нь шүдний эрүүл мэндийг хадгалах хамгийн чухал алхам юм. Энэ нийтлэлд шүдээ зөв угаах аргыг дэлгэрэнгүй тайлбарлаж байна.",
-      date: "2023-05-15",
-      author: "Д. Болормаа",
-      category: "Шүдний эрүүл мэнд",
-      image: "/images/blog-1.jpg",
-    },
-    {
-      id: 2,
-      title: "Хүүхдийн шүдний эрүүл мэнд",
-      excerpt: "Хүүхдийн шүдний эрүүл мэндийг хэрхэн хамгаалах, зөв дадал зуршил төлөвшүүлэх талаар мэдээлэл.",
-      date: "2023-06-22",
-      author: "С. Мөнхзул",
-      category: "Хүүхдийн шүдний эмчилгээ",
-      image: "/images/blog-2.jpg",
-    },
-    {
-      id: 3,
-      title: "Шүдний имплантын давуу талууд",
-      excerpt:
-        "Шүдний имплант нь алдагдсан шүдийг орлуулах хамгийн дэвшилтэт арга. Энэ нийтлэлд имплантын давуу талуудыг тайлбарлаж байна.",
-      date: "2023-07-10",
-      author: "Б. Батбаяр",
-      category: "Шүдний имплант",
-      image: "/images/blog-3.jpg",
-    },
-    {
-      id: 4,
-      title: "Шүдний өвчин ба ерөнхий эрүүл мэнд",
-      excerpt:
-        "Шүдний өвчин нь зүрх судасны өвчин, чихрийн шижин зэрэг бусад эрүүл мэндийн асуудалтай хэрхэн холбогддог талаар.",
-      date: "2023-08-05",
-      author: "Д. Болормаа",
-      category: "Шүдний эрүүл мэнд",
-      image: "/images/blog-4.jpg",
-    },
-    {
-      id: 5,
-      title: "Шүдний гажиг засал: Насанд хүрэгчдэд зориулсан",
-      excerpt: "Насанд хүрэгчдэд зориулсан шүдний гажиг засал, үүний давуу талууд болон сонголтууд.",
-      date: "2023-09-18",
-      author: "Г. Оюунчимэг",
-      category: "Шүдний гажиг засал",
-      image: "/images/blog-5.jpg",
-    },
-    {
-      id: 6,
-      title: "Шүдний цайралт: Мэдэх ёстой зүйлс",
-      excerpt: "Шүдний цайралтын талаар мэдэх ёстой бүх зүйл: үр дүн, аюулгүй байдал, арчилгаа.",
-      date: "2023-10-30",
-      author: "Н. Энхбаяр",
-      category: "Шүдний гоо сайхан",
-      image: "/images/blog-6.jpg",
-    },
-  ]
+export default function NewsPage() {
+  const [news, setNews] = useState<any[]>([]); // Initialize with an empty array
+  const [expandedNewsId, setExpandedNewsId] = useState<number | null>(null);
+
+  // Fetch news data from the API
+  const fetchNews = useCallback(async () => {
+    try {
+      const response : unknown = await newsAPI.getAll(); // Replace with your actual API method
+      const data = response as ApiResponse;
+
+      if (data.success && data.news) {
+        setNews(data.news); // Update the news state
+      } else {
+        console.error("Failed to fetch news:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching news:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNews(); // Fetch news on component mount
+  }, [fetchNews]);
 
   return (
     <>
@@ -76,7 +44,7 @@ export default function BlogPage() {
 
         <section className="blog-list">
           <div className="blog-grid">
-            {blogPosts.map((post) => (
+            {news.map((post) => ( // Use the news state to render posts
               <div className="blog-card" key={post.id}>
                 <div className="blog-image">
                   <Image
@@ -108,6 +76,5 @@ export default function BlogPage() {
       </main>
       <Footer />
     </>
-  )
+  );
 }
-

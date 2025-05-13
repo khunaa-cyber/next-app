@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server"
 import connectToDatabase from "@/lib/mongodb"
 import Doctor from "@/models/Doctor"
+import { boolean } from "drizzle-orm/gel-core"
+ 
+export interface ApiResponse {
+  success: boolean
+  doctors?: any[]
+  message?: string
+}
+
 
 export async function GET() {
   try {

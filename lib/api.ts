@@ -48,12 +48,7 @@ export const authAPI = {
 // Doctors API
 export const doctorsAPI = {
   getAll: async () => {
-    const response = await fetchAPI<{ doctors: Doctor[] }>("/doctors");
-    return response.doctors;
-  },
-
-  getById: async (id: string) => {
-    return fetchAPI<Doctor>(`/doctors/${id}`);
+ return fetchAPI<Doctor[]>(`/doctors`);
   },
 
   getReviews: async (doctorId: string) => {
@@ -152,6 +147,16 @@ export const faqAPI = {
     return fetchAPI<FaqItem[]>("/faq");
   },
 };
+
+export const newsAPI = {
+  getAll: async () => {
+    return fetchAPI<{ news: any[] }>("/news");
+  },
+
+  getById: async (id: string) => {
+    return fetchAPI<any>(`/news/${id}`);
+  },  
+}
 
 // Define TypeScript interfaces for the API responses
 interface Doctor {
