@@ -1,6 +1,21 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { authAPI } from "@/lib/api"
+
+// Define types for API responses
+type AuthResponse = {
+  success: boolean
+  user?: {
+    _id?: string
+    id?: string
+    name: string
+    email: string
+    role: "client" | "doctor" | "admin"
+  }
+  message?: string
+  token?: string
+}
 
 type User = {
   id: string
@@ -49,64 +64,94 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
+    console.log("Login attempt for:", email)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Explicitly type the response
+      const response = (await authAPI.login(email, password)) as AuthResponse
+      console.log("Login API response:", response)
 
-    // Mock users for demo
-    const mockUsers = [
-      { id: "1", name: "Client User", email: "client@example.com", password: "password", role: "client" as const },
-      { id: "2", name: "Doctor User", email: "doctor@example.com", password: "password", role: "doctor" as const },
-      { id: "3", name: "Admin User", email: "admin@example.com", password: "password", role: "admin" as const },
-    ]
-
-    const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
-
-    if (foundUser) {
-      const { password, ...userWithoutPassword } = foundUser
-      setUser(userWithoutPassword)
-      try {
-        localStorage.setItem("dental_user", JSON.stringify(userWithoutPassword))
-      } catch (error) {
-        console.error("Error setting localStorage:", error)
+      // IMPORTANT: Check if login was actually successful
+      if (!response.success) {
+        console.error("Login failed:", response.message)
+        throw new Error(response.message || "Нэвтрэх үйлдэл амжилтгүй боллоо")
       }
-    } else {
-      throw new Error("Invalid email or password")
-    }
 
-    setIsLoading(false)
+      if (!response.user) {
+        console.error("Login failed: No user data returned")
+        throw new Error("Хэрэглэгчийн мэдээлэл буцаагдсангүй")
+      }
+
+      // Ensure the user object has the correct structure
+      const userData: User = {
+        id: response.user.id || response.user._id || "",
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role,
+      }
+
+      console.log("Setting user data:", userData)
+      setUser(userData)
+      localStorage.setItem("dental_user", JSON.stringify(userData))
+
+      // Return successfully to allow redirect
+      return
+    } catch (error) {
+      console.error("Login error:", error)
+      setUser(null) // Ensure user is null on login failure
+      localStorage.removeItem("dental_user") // Remove any stored user data
+      throw error // Re-throw the error to be caught by the form
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // In a real app, you would send this data to your backend
-    // For demo purposes, we'll just create a new user locally
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role: "client" as const,
-    }
-
-    setUser(newUser)
+    console.log("Register attempt for:", email)
 
     try {
-      localStorage.setItem("dental_user", JSON.stringify(newUser))
-    } catch (error) {
-      console.error("Error setting localStorage:", error)
-    }
+      // Explicitly type the response
+      const response = (await authAPI.register(name, email, password)) as AuthResponse
+      console.log("Register API response:", response)
 
-    setIsLoading(false)
+      if (!response.success) {
+        console.error("Registration failed:", response.message)
+        throw new Error(response.message || "Бүртгүүлэх үйлдэл амжилтгүй боллоо")
+      }
+
+      if (!response.user) {
+        console.error("Registration failed: No user data returned")
+        throw new Error("Хэрэглэгчийн мэдээлэл буцаагдсангүй")
+      }
+
+      // Ensure the user object has the correct structure
+      const userData: User = {
+        id: response.user.id || response.user._id || "",
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role,
+      }
+
+      console.log("Setting user data:", userData)
+      setUser(userData)
+      localStorage.setItem("dental_user", JSON.stringify(userData))
+    } catch (error) {
+      console.error("Registration error:", error)
+      setUser(null) // Ensure user is null on registration failure
+      localStorage.removeItem("dental_user") // Remove any stored user data
+      throw error // Re-throw the error to be caught by the form
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const logout = () => {
     setUser(null)
     try {
       localStorage.removeItem("dental_user")
+      // Force a page reload to ensure all components update
+      window.location.href = "/"
     } catch (error) {
       console.error("Error removing from localStorage:", error)
     }
@@ -124,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
+// Export as a named export, not a default export
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) {

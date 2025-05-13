@@ -46,7 +46,7 @@ export default function BookOnlinePage() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBooking = async () => {
       setIsLoading(true)
       try {
         const servicesRes = await fetch("/api/services")
@@ -67,13 +67,13 @@ export default function BookOnlinePage() {
         const doctorsRes = await fetch("/api/doctors")
         const doctorsData = await doctorsRes.json() as {
           success: boolean
-          doctors: { id: string; name: string; position: string }[]
+          doctors: { _id: string; name: string; position: string }[]
         }
 
         if (doctorsData.success) {
           setDoctors(
             doctorsData.doctors.map((d) => ({
-              id: d.id,
+              id: d._id,
               name: d.name,
               specialty: d.position,
             }))
@@ -87,7 +87,7 @@ export default function BookOnlinePage() {
       }
     }
 
-    fetchData()
+    fetchBooking()
   }, [])
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function BookOnlinePage() {
     }
   }, [user])
 
-  const availableTimes = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"]
+  const availableTimes = ["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -127,6 +127,9 @@ export default function BookOnlinePage() {
         date: formData.date,
         time: formData.time,
         service: services.find((s) => s.id === formData.service)?.name || "",
+        phone: formData.phone,
+        email: formData.email,
+        notes: formData.notes,
       }) as { success: boolean; message?: string }
 
       if (response.success) {
@@ -233,16 +236,15 @@ export default function BookOnlinePage() {
                   <div className="form-step">
                     <h2>Эмч сонгоно уу</h2>
                     <div className="doctor-options">
-                      {doctors.map((doctor) => (
-                        <div
-                          key={doctor.id}
-                          className={`doctor-option ${formData.doctor === doctor.id ? "selected" : ""}`}
-                          onClick={() => setFormData((prev) => ({ ...prev, doctor: doctor.id }))}
-                        >
-                          <div className="doctor-name">{doctor.name}</div>
-                          <div className="doctor-specialty">{doctor.specialty}</div>
-                        </div>
-                      ))}
+                      {doctors.map((doctor, index) => (
+                  <div
+                    key={doctor.id || index}
+                    className={`doctor-option ${formData.doctor === doctor.id ? "selected" : ""}`}
+                    onClick={() => setFormData((prev) => ({ ...prev, doctor: doctor.id }))}
+                  >
+                    {doctor.name}
+                  </div>
+                ))}
                     </div>
                     <div className="form-buttons">
                       <button className="button prev-button" onClick={prevStep}>

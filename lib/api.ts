@@ -85,7 +85,7 @@ export const appointmentsAPI = {
     return fetchAPI<Appointment>(`/appointments/${id}`);
   },
 
-  create: async (appointment: { userId: string; doctorId: string; date: string; time: string; service: string }) => {
+  create: async (appointment: { userId: string; doctorId: string; date: string; time: string; service: string; phone: string; email: string; notes:string }) => {
     return fetchAPI("/appointments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
