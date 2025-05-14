@@ -119,6 +119,64 @@
   color: #f44336;
 }
 
+/* Add styles for the news management section */
+.news-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 0.5rem;
+}
+
+.news-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+}
+
+.news-table th,
+.news-table td {
+  padding: 1.2rem;
+  text-align: left;
+  font-size: 1.6rem;
+  border-bottom: 1px solid #eee;
+}
+
+.news-table th {
+  background-color: var(--background-color);
+  color: var(--blue);
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+}
+
+.news-list-section {
+  margin-top: 3rem;
+}
+
+.news-list-section h3 {
+  font-size: 2rem;
+  color: var(--blue);
+  margin-bottom: 1.5rem;
+}
+
 @media (max-width: 768px) {
   .stats-cards {
     grid-template-columns: 1fr;

@@ -1,7 +1,6 @@
-import {NextResponse} from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
-import News from '@/models/News';
-
+import { NextResponse } from "next/server"
+import connectToDatabase from "@/lib/mongodb"
+import News from "@/models/News"
 
 export async function GET() {
   try {
@@ -11,7 +10,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, news })
   } catch (error) {
-    console.error("Error fetching feedbacks:", error)
+    console.error("Error fetching news:", error)
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
   }
 }
@@ -23,20 +22,22 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, content, date, image, description, category } = body
 
-    // shaardlagatai talbaruudiig shalgah
-    if (!title || !content || !description || !category) {
+    // Check required fields
+    if (!title || !content || !description || !image) {
       return NextResponse.json(
-        { success: false, message: "Name, email, subject, message, and feedback type are required" },
+        { success: false, message: "Title, content, description, and image are required" },
         { status: 400 },
       )
     }
 
-    // shine sanal huselt uusgeh
+    // Create new news item
     const newNews = new News({
       title,
       content,
       date: date || new Date(),
-      image: image || "",
+      image,
+      description,
+      category: category || "general",
     })
 
     await newNews.save()
@@ -44,10 +45,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       news: newNews,
-      message: "Feedback submitted successfully",
+      message: "News added successfully",
     })
   } catch (error) {
-    console.error("Error submitting feedback:", error)
+    console.error("Error creating news:", error)
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
   }
-} 
+}

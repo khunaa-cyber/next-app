@@ -208,3 +208,41 @@ export const faqAPI = {
     return fetchAPI("/faq")
   },
 }
+
+export const newsAPI = {
+  getAll: async () => {
+    return fetchAPI("/news")
+  },
+
+  getById: async (id: string) => {
+    return fetchAPI(`/news/${id}`)
+  },
+
+  create: async (newsData: {
+    title: string
+    content: string
+    image: string
+    description: string
+    category?: string
+  }) => {
+    return fetchAPI("/news", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newsData),
+    })
+  },
+
+  update: async (id: string, newsData: any) => {
+    return fetchAPI(`/news/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newsData),
+    })
+  },
+
+  delete: async (id: string) => {
+    return fetchAPI(`/news/${id}`, {
+      method: "DELETE",
+    })
+  },
+}

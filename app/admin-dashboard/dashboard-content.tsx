@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react"
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/auth-context";
 import { AuthWrapper } from "@/components/auth-wrapper";
@@ -36,6 +37,25 @@ interface Stats {
   patients: number;
   doctors: number;
   revenue: string;
+}
+
+interface NewsItem {
+  _id: string
+  title: string
+  content: string
+  description: string
+  image: string
+  date: string
+  category: string
+}
+
+interface CategoryNames {
+  [key: string]: string
+  general: string
+  "dental-health": string
+  technology: string
+  events: string
+  promotions: string
 }
 
 export function AdminDashboardContent() {
@@ -513,4 +533,212 @@ export function AdminDashboardContent() {
       </main>
     </AuthWrapper>
   );
+}
+
+function AuditLogs() {
+  const [newsTitle, setNewsTitle] = useState<string>("")
+  const [newsContent, setNewsContent] = useState<string>("")
+  const [newsImage, setNewsImage] = useState<string>("")
+  const [newsDescription, setNewsDescription] = useState<string>("")
+  const [newsCategory, setNewsCategory] = useState<string>("general")
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [successMessage, setSuccessMessage] = useState<string>("")
+  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [newsList, setNewsList] = useState<NewsItem[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    fetchNews()
+  }, [])
+
+  const fetchNews = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch("/api/news")
+      const data = await response.json()
+      if (data.success) {
+        setNewsList(data.news)
+      }
+    } catch (error) {
+      console.error("Error fetching news:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSuccessMessage("")
+    setErrorMessage("")
+
+    try {
+      const response = await fetch("/api/news", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: newsTitle,
+          content: newsContent,
+          image: newsImage,
+          description: newsDescription,
+          category: newsCategory,
+          date: new Date().toISOString(),
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setSuccessMessage("Мэдээ амжилттай нэмэгдлээ!")
+        setNewsTitle("")
+        setNewsContent("")
+        setNewsImage("")
+        setNewsDescription("")
+        setNewsCategory("general")
+        fetchNews()
+      } else {
+        setErrorMessage(data.message || "Мэдээ нэмэхэд алдаа гарлаа")
+      }
+    } catch (error) {
+      console.error("Error adding news:", error)
+      setErrorMessage("Мэдээ нэмэхэд алдаа гарлаа")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    setSuccessMessage("")
+    setErrorMessage("")
+
+    // Confirm before deleting
+  if (!confirm("Энэ мэдээг устгахдаа итгэлтэй байна уу?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/news/${id}`, {
+        method: "DELETE",
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setSuccessMessage("Мэдээ амжилттай устгагдлаа!")
+        fetchNews()
+      } else {
+        setErrorMessage(data.message || "Мэдээ устгахад алдаа гарлаа")
+      }
+    } catch (error) {
+      console.error("Error deleting news:", error)
+      setErrorMessage("Мэдээ устгахад алдаа гарлаа")
+    }
+  }
+
+  return (
+    <div className="news-management-section">
+      <div className="section-header">
+        <h2>Мэдээ нэмэх</h2>
+      </div>
+
+      {successMessage && <div className="success-message">{successMessage}</div>}
+
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+      <form onSubmit={handleSubmit} className="news-form">
+        <div className="form-group">
+          <label htmlFor="newsTitle">Гарчиг</label>
+          <input type="text" id="newsTitle" value={newsTitle} onChange={(e) => setNewsTitle(e.target.value)} required />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="newsDescription">Товч тайлбар</label>
+          <input
+            type="text"
+            id="newsDescription"
+            value={newsDescription}
+            onChange={(e) => setNewsDescription(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="newsContent">Агуулга</label>
+          <textarea
+            id="newsContent"
+            value={newsContent}
+            onChange={(e) => setNewsContent(e.target.value)}
+            rows={6}
+            required
+          ></textarea>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="newsImage">Зургийн URL</label>
+          <input
+            type="text"
+            id="newsImage"
+            value={newsImage}
+            onChange={(e) => setNewsImage(e.target.value)}
+            placeholder="https://example.com/image.jpg"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="newsCategory">Ангилал</label>
+          <select id="newsCategory" value={newsCategory} onChange={(e) => setNewsCategory(e.target.value)} required>
+            <option value="general">Ерөнхий</option>
+            <option value="dental-health">Шүдний эрүүл мэнд</option>
+            <option value="technology">Технологи</option>
+            <option value="events">Үйл явдал</option>
+            <option value="promotions">Урамшуулал</option>
+          </select>
+        </div>
+
+        <button type="submit" className="button" disabled={isSubmitting}>
+          {isSubmitting ? "Нэмж байна..." : "Мэдээ нэмэх"}
+        </button>
+      </form>
+
+      <div className="news-list-section">
+        <h3>Нийтлэгдсэн мэдээнүүд</h3>
+        {isLoading ? (
+          <div className="loading-spinner"></div>
+        ) : (
+          <table className="news-table">
+            <thead>
+              <tr>
+                <th>Гарчиг</th>
+                <th>Огноо</th>
+                <th>Ангилал</th>
+                <th>Үйлдэл</th>
+              </tr>
+            </thead>
+            <tbody>
+              {newsList.map((news: NewsItem) => (
+                <tr key={news._id}>
+                  <td>{news.title}</td>
+                  <td>{new Date(news.date).toLocaleDateString()}</td>
+                  <td>{news.category || "Ерөнхий"}</td>
+                  <td>
+                    <button className="button small delete" onClick={() => handleDelete(news._id)}>
+                      Устгах
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {newsList.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: "center" }}>
+                    Мэдээ олдсонгүй
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
 }

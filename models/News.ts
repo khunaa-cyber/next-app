@@ -23,7 +23,7 @@ const NewsSchema = new mongoose.Schema({
   },
   category: { 
     type: String,
-    required: true,
+    default: "general",
   },
 
 })
