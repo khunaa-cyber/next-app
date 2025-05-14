@@ -104,6 +104,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
+    // Mock users for demo
+    const mockUsers = [
+      { id: "1", name: "Client User", email: "client@example.com", password: "password", role: "client" as const },
+      { id: "2", name: "Doctor User", email: "doctor@example.com", password: "password", role: "doctor" as const },
+      { id: "3", name: "Admin User", email: "admin@example.com", password: "password", role: "admin" as const },
+    ]
+
+    const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
+
+    if (foundUser) {
+      const { password, ...userWithoutPassword } = foundUser
+      setUser(userWithoutPassword)
+      try {
+        localStorage.setItem("dental_user", JSON.stringify(userWithoutPassword))
+      } catch (error) {
+        console.error("Error setting localStorage:", error)
+      }
+    } else {
+      throw new Error("Invalid email or password")
+    }
+    setIsLoading(false)
+    
   }
 
   const register = async (name: string, email: string, password: string) => {
