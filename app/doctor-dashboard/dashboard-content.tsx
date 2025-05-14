@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "../../context/auth-context"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../context/auth-context";
 
 export function DoctorDashboardContent() {
-  const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const [activeTab, setActiveTab] = useState("appointments")
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState("appointments");
 
   // Initialize auth here to avoid conditional hook call
-  const auth = useAuth()
-  const { user, isLoading } = auth
+  const auth = useAuth();
+  const { user, isLoading } = auth;
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (mounted && !isLoading) {
       if (!user) {
-        router.push("/sign")
+        router.push("/sign");
       } else if (user.role !== "doctor") {
-        router.push("/sign")
+        router.push("/sign");
       }
     }
-  }, [user, isLoading, router, mounted])
+  }, [user, isLoading, router, mounted]);
 
   if (!mounted || isLoading) {
     return (
@@ -33,16 +33,14 @@ export function DoctorDashboardContent() {
         <div className="loading-spinner"></div>
         <p>Уншиж байна...</p>
       </div>
-    )
+    );
   }
 
   if (!user || user.role !== "doctor") {
-    return null
+    return null;
   }
 
-// 
-
-
+  //
 
   return (
     <main className="doctor-dashboard-page">
@@ -63,7 +61,9 @@ export function DoctorDashboardContent() {
 
           <div className="dashboard-nav">
             <button
-              className={`nav-item ${activeTab === "appointments" ? "active" : ""}`}
+              className={`nav-item ${
+                activeTab === "appointments" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("appointments")}
             >
               <i className="fa-solid fa-calendar-check"></i>
@@ -122,7 +122,7 @@ export function DoctorDashboardContent() {
                   </thead>
                   <tbody>
                     {appointments
-                      .filter((a) => a.date === "2024-04-05")
+                      .filter((a) => a.date === "")
                       .map((appointment) => (
                         <tr key={appointment.id}>
                           <td>{appointment.time}</td>
@@ -245,6 +245,5 @@ export function DoctorDashboardContent() {
         </div>
       </section>
     </main>
-  )
+  );
 }
-

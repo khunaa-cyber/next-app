@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
+import { useState } from "react";
+import Image from "next/image";
 
 export function TestimonialSlider() {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const testimonials = [
     {
@@ -16,30 +16,39 @@ export function TestimonialSlider() {
     },
     {
       image: "/img-2.jpg",
-      comment: "Үйлчилгээний орчин цэвэрхэн, эмч маш найрсаг байсан. Энд дахиж ирнэ гэж бодож байна!",
+      comment:
+        "Үйлчилгээний орчин цэвэрхэн, эмч маш найрсаг байсан. Энд дахиж ирнэ гэж бодож байна!",
       author: "Мөнхбаяр",
       rating: 5,
     },
     {
       image: "/img-3.jpg",
-      comment: "Маш сэтгэл ханамжтай байна. Сэтгэгдэл маш эерэг байна шүү. Баярлалаа!",
+      comment:
+        "Маш сэтгэл ханамжтай байна. Сэтгэгдэл маш эерэг байна шүү. Баярлалаа!",
       author: "Сараа",
       rating: 5,
     },
-  ]
+  ];
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1))
-  }
+    setCurrentIndex((prevIndex) =>
+      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1))
-  }
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+    );
+  };
 
   return (
     <div className="testimonial-slider">
       <div className="slider-container">
-        <div className="comment-wrapper" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+        <div
+          className="comment-wrapper"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
           {testimonials.map((testimonial, index) => (
             <div className="comment-slide" key={index}>
               <div className="comment-image">
@@ -71,6 +80,5 @@ export function TestimonialSlider() {
         <button onClick={nextSlide}>→</button>
       </div>
     </div>
-  )
+  );
 }
-

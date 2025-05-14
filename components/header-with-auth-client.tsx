@@ -1,45 +1,53 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useAuth } from "../context/auth-context"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "../context/auth-context";
 
 export function HeaderWithAuthClient() {
-  const [mounted, setMounted] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Safe access to auth context after mounting
-  const auth = useAuth()
-  const { user, logout } = auth
+  const auth = useAuth();
+  const { user, logout } = auth;
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
 
     const handleScroll = () => {
       if (window.scrollY > 30) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   // Don't render anything until mounted to avoid hydration issues
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
-    <header className={`header-with-auth ${isScrolled ? "header-active" : ""}`} style={{ display: "none" }}>
+    <header
+      className={`header-with-auth ${isScrolled ? "header-active" : ""}`}
+      style={{ display: "none" }}
+    >
       <Link href="/" className="logo">
-        <Image src="logo.png" alt="Dental Clinic Logo" width={170} height={100} />
+        <Image
+          src="logo.png"
+          alt="Dental Clinic Logo"
+          width={170}
+          height={100}
+        />
       </Link>
 
       <nav className={`navbar ${isMenuOpen ? "nav-toggle" : ""}`}>
@@ -93,8 +101,10 @@ export function HeaderWithAuthClient() {
         </ul>
       </nav>
 
-      <div className={`fa-solid fa-bars ${isMenuOpen ? "active" : ""}`} onClick={toggleMenu}></div>
+      <div
+        className={`fa-solid fa-bars ${isMenuOpen ? "active" : ""}`}
+        onClick={toggleMenu}
+      ></div>
     </header>
-  )
+  );
 }
-

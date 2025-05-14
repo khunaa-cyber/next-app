@@ -1,50 +1,77 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { useAuth } from "../../context/auth-context"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "../../context/auth-context";
 
 export function SignForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      await login(email, password)
-      router.push("/")
+      await login(email, password);
+
+      // Get the user from localStorage to determine where to redirect
+      const storedUser = localStorage.getItem("dental_user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        console.log("User role:", user.role);
+
+        // Redirect based on user role
+        if (user.role === "doctor") {
+          console.log("Redirecting to doctor dashboard");
+          router.push("/doctor-dashboard");
+        } else if (user.role === "admin") {
+          console.log("Redirecting to admin dashboard");
+          router.push("/admin-dashboard");
+        } else {
+          console.log("Redirecting to home page");
+          router.push("/");
+        }
+      } else {
+        // Default redirect if user data is not available
+        router.push("/");
+      }
     } catch (err) {
-      setError("Имэйл эсвэл нууц үг буруу байна.")
+      console.error("Login error:", err);
+      setError(
+        err instanceof Error ? err.message : "Имэйл эсвэл нууц үг буруу байна."
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-
     <div>
       <div className="header"></div>
       <div className="return_home">
-      <a href="#">
-      <i className="fa-solid fa-arrow-left"  style={{color:'var(--main-color1)'}}></i>          </a>
-
-        <Link href="/" style={{color:'var(--main-color1)'}}>Нүүр хуудасруу шилжих</Link>
+        <a href="#">
+          <i
+            className="fa-solid fa-arrow-left"
+            style={{ color: "var(--main-color1)" }}
+          ></i>
+        </a>
+        <Link href="/" style={{ color: "var(--main-color1)" }}>
+          Нүүр хуудасруу шилжих
+        </Link>
       </div>
 
       <div className="sign-form-container">
         <div className="sign-form-content">
-        <h1 style={{ textAlign: 'center' }}>Нэвтрэх</h1>
+          <h1 style={{ textAlign: "center" }}>Нэвтрэх</h1>
 
           <p>Та өөрийн бүртгэлтэй имэйл хаяг болон нууц үгээ оруулна уу.</p>
 
@@ -53,7 +80,13 @@ export function SignForm() {
           <form onSubmit={handleSubmit} className="sign-form">
             <div className="form-group">
               <label htmlFor="email">Имэйл</label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
             <div className="form-group">
@@ -71,7 +104,11 @@ export function SignForm() {
               <Link href="/forgot-password">Нууц үгээ мартсан?</Link>
             </div>
 
-            <button type="submit" className="button sign-button" disabled={isLoading}>
+            <button
+              type="submit"
+              className="button sign-button"
+              disabled={isLoading}
+            >
               {isLoading ? "Уншиж байна..." : "Нэвтрэх"}
             </button>
           </form>
@@ -93,11 +130,11 @@ export function SignForm() {
         </div>
       </div>
       <div className="sign-form-container">
-        <p className="sign-form-content">Өөрийн бүртгэлээ үүсгэснээр өөрийн үзлэгийн түүхийг харах боломжтой . Мөн та сэтгэгдэлээ үлдээх эрх үүснэ. </p>
+        <p className="sign-form-content">
+          Өөрийн бүртгэлээ үүсгэснээр өөрийн үзлэгийн түүхийг харах боломжтой.
+          Мөн та сэтгэгдэлээ үлдээх эрх үүснэ.
+        </p>
       </div>
-      </div>
-
-      
-  )
+    </div>
+  );
 }
-

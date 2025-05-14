@@ -1,36 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useAuth } from "../context/auth-context"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "../context/auth-context";
 
 export function HeaderWithAuth() {
-  const { user, logout } = useAuth()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const { user, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 30) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <header className={isScrolled ? "header-active" : ""}>
       <Link href="/" className="logo">
-        <Image src="logo.png" alt="Dental Clinic Logo" width={170} height={100} />
+        <Image
+          src="logo.png"
+          alt="Dental Clinic Logo"
+          width={170}
+          height={100}
+        />
       </Link>
 
       <nav className={`navbar ${isMenuOpen ? "nav-toggle" : ""}`}>
@@ -84,8 +89,10 @@ export function HeaderWithAuth() {
         </ul>
       </nav>
 
-      <div className={`fa-solid fa-bars ${isMenuOpen ? "active" : ""}`} onClick={toggleMenu}></div>
+      <div
+        className={`fa-solid fa-bars ${isMenuOpen ? "active" : ""}`}
+        onClick={toggleMenu}
+      ></div>
     </header>
-  )
+  );
 }
-

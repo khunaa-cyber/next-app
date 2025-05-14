@@ -1,51 +1,53 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true 
+  name: {
+    type: String,
+    required: true,
   },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true 
+  email: {
+    type: String,
+    required: true,
+    unique: true,
   },
-  password: { 
-    type: String, 
-    required: true 
+  phone: {
+    type: String,
+    required: false,
   },
-  role: { 
-    type: String, 
-    enum: ['client', 'doctor', 'admin'], 
-    default: 'client' 
+  password: {
+    type: String,
+    required: true,
   },
-  phone: { 
-    type: String 
+  role: {
+    type: String,
+    enum: ["client", "doctor", "admin"],
+    default: "client",
   },
-  address: { 
-    type: String 
+
+  address: {
+    type: String,
   },
-  birthdate: { 
-    type: Date 
+  birthdate: {
+    type: Date,
   },
-  gender: { 
-    type: String, 
-    enum: ['Эрэгтэй', 'Эмэгтэй', 'Бусад'] 
+  gender: {
+    type: String,
+    enum: ["Эрэгтэй", "Эмэгтэй", "Бусад"],
   },
-  allergies: { 
-    type: String 
+  allergies: {
+    type: String,
   },
-  bloodType: { 
-    type: String 
+  bloodType: {
+    type: String,
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  updatedAt: { 
-    type: Date, 
-    default: Date.now 
-  }
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-export default mongoose.models.User || mongoose.model('User', UserSchema);
+export default mongoose.models.User || mongoose.model("User", UserSchema);

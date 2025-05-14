@@ -1,5 +1,5 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
 export function HeaderWithoutAuth() {
   return (
@@ -33,6 +33,5 @@ export function HeaderWithoutAuth() {
         </ul>
       </nav>
     </header>
-  )
+  );
 }
-

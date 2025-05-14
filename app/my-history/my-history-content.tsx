@@ -6,50 +6,80 @@ import { useAuth } from "@/context/auth-context"
 import { userAPI, appointmentsAPI } from "@/lib/api"
 import Image from "next/image"
 
+interface Appointment {
+  id: number;
+  date: string;
+  time: string;
+  doctor: string;
+  service: string;
+  status: string;
+  cost: string;
+  diagnosis?: string;
+  notes?: string;
+}
+
+interface UserProfile {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  birthdate: string;
+  gender: string;
+  allergies: string;
+  bloodType: string;
+}
+
 export function MyHistoryContent() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [appointments, setAppointments] = useState([])
+  const [appointments, setAppointments] = useState<Appointment[]>([])
 
-  // User profile state
-  const [profile, setProfile] = useState({
-    name: user?.name || "Нэргүй хэрэглэгч",
-    phone: "99887766",
-    email: user?.email || "example@mail.com",
-    address: "Баянзүрх дүүрэг, 13-р хороолол",
-    birthdate: "1990-01-01",
-    gender: "Эрэгтэй",
-    allergies: "Байхгүй",
-    bloodType: "A+",
+  const [profile, setProfile] = useState<UserProfile>({
+    name: user?.name || "",
+    phone: "",
+    email: user?.email || "",
+    address: "",
+    birthdate: "",
+    gender: "",
+    allergies: "",
+    bloodType: "",
   })
 
-  // Fetch user profile and appointments
   useEffect(() => {
     if (user) {
       const fetchUserData = async () => {
         setIsLoading(true)
         try {
-          // Fetch user profile
-          const profileResponse = await userAPI.getById(user.id)
-          if (profileResponse.success) {
+          const profileResponse = await userAPI.getById(user.id) as unknown
+          if (
+            typeof profileResponse === 'object' &&
+            profileResponse !== null &&
+            'success' in profileResponse &&
+            (profileResponse as any).success
+          ) {
+            const u = (profileResponse as any).user
             setProfile({
-              name: profileResponse.user.name,
-              phone: profileResponse.user.phone || "99887766",
-              email: profileResponse.user.email,
-              address: profileResponse.user.address || "Баянзүрх дүүрэг, 13-р хороолол",
-              birthdate: profileResponse.user.birthdate || "1990-01-01",
-              gender: profileResponse.user.gender || "Эрэгтэй",
-              allergies: profileResponse.user.allergies || "Байхгүй",
-              bloodType: profileResponse.user.bloodType || "A+",
+              name: u.name,
+              phone: u.phone,
+              email: u.email,
+              address: u.address,
+              birthdate: u.birthdate?.split("T")[0] || "",
+              gender: u.gender || "",
+              allergies: u.allergies || "",
+              bloodType: u.bloodType,
             })
           }
 
-          // Fetch appointments
-          const appointmentsResponse = await appointmentsAPI.getByUserId(user.id)
-          if (appointmentsResponse.success) {
-            setAppointments(appointmentsResponse.appointments)
+          const appointmentsResponse = await appointmentsAPI.getByUserId(user.id) as unknown
+          if (
+            typeof appointmentsResponse === 'object' &&
+            appointmentsResponse !== null &&
+            'success' in appointmentsResponse &&
+            (appointmentsResponse as any).success
+          ) {
+            setAppointments((appointmentsResponse as any).appointments)
           }
         } catch (error) {
           console.error("Error fetching user data:", error)
@@ -62,18 +92,30 @@ export function MyHistoryContent() {
     }
   }, [user])
 
-  const handleProfileChange = (e) => {
+  const handleProfileChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
-    setProfile((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+
+    // name is keyof UserProfile гэдгийг шалгана
+    if (name in profile) {
+      setProfile((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const saveProfile = async () => {
+    if (!user) return
     try {
-      const response = await userAPI.updateProfile(user.id, profile)
-      if (response.success) {
+      const response = await userAPI.updateProfile(user.id, profile) as unknown
+      if (
+        typeof response === 'object' &&
+        response !== null &&
+        'success' in response &&
+        (response as any).success
+      ) {
         setIsEditing(false)
       }
     } catch (error) {
@@ -81,14 +123,18 @@ export function MyHistoryContent() {
     }
   }
 
-  const cancelAppointment = async (appointmentId) => {
+  const cancelAppointment = async (appointmentId: number) => {
     try {
-      const response = await appointmentsAPI.cancel(appointmentId)
-      if (response.success) {
-        // Update the appointments list
+      const response = await appointmentsAPI.cancel(appointmentId) as unknown
+      if (
+        typeof response === 'object' &&
+        response !== null &&
+        'success' in response &&
+        (response as any).success
+      ) {
         setAppointments((prev) =>
-          prev.map((appointment) =>
-            appointment.id === appointmentId ? { ...appointment, status: "Цуцалсан" } : appointment,
+          prev.map((a) =>
+            a.id === appointmentId ? { ...a, status: "Цуцалсан" } : a,
           ),
         )
       }
@@ -96,7 +142,6 @@ export function MyHistoryContent() {
       console.error("Error cancelling appointment:", error)
     }
   }
-
 
   return (
     <AuthWrapper requiredRole="client">
@@ -109,45 +154,39 @@ export function MyHistoryContent() {
         <section className="history-section">
           <div className="history-container">
             <div className="history-tabs">
-              <div
-                className={`tab ${activeTab === "profile" ? "active" : ""}`}
-                onClick={() => setActiveTab("profile")}
-              >
-                Хувийн мэдээлэл
-              </div>
-              <div
-                className={`tab ${activeTab === "appointments" ? "active" : ""}`}
-                onClick={() => setActiveTab("appointments")}
-              >
-                Цаг захиалга
-              </div>
-              <div
-                className={`tab ${activeTab === "treatments" ? "active" : ""}`}
-                onClick={() => setActiveTab("treatments")}
-              >
-                Эмчилгээний түүх
-              </div>
+              {[
+                ["profile", "Хувийн мэдээлэл"],
+                ["appointments", "Цаг захиалга"],
+                ["treatments", "Эмчилгээний түүх"],
+              ].map(([tab, label]) => (
+                <div
+                  key={tab}
+                  className={`tab ${activeTab === tab ? "active" : ""}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {label}
+                </div>
+              ))}
             </div>
 
             <div className="tab-content">
               {activeTab === "profile" && (
                 <div className="profile-section">
                   <h2>Хувийн мэдээлэл</h2>
-                  
                   <div className="profile-container">
                     <div className="profile-header">
                       <div className="profile-avatar">
-                        <Image 
-                          src="/doctor.png" 
-                          alt="Profile" 
-                          width={100} 
-                          height={100} 
+                        <Image
+                          src="/doctor.png"
+                          alt="Profile"
+                          width={100}
+                          height={100}
                           className="avatar-image"
                         />
                       </div>
                       <div className="profile-name">
                         <h3>{profile.name}</h3>
-                        <p>Үйлчлүүлэгч ID: {user?.id || "12345"}</p>
+                        <p>Үйлчлүүлэгч ID: {user?.id}</p>
                       </div>
                       <div className="profile-actions">
                         {isEditing ? (
@@ -157,150 +196,75 @@ export function MyHistoryContent() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="profile-details">
                       {isEditing ? (
-                        <div className="profile-form">
-                          <div className="form-row">
-                            <div className="form-group">
-                              <label>Нэр</label>
-                              <input 
-                                type="text" 
-                                name="name" 
-                                value={profile.name} 
-                                onChange={handleProfileChange} 
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Утас</label>
-                              <input 
-                                type="text" 
-                                name="phone" 
-                                value={profile.phone} 
-                                onChange={handleProfileChange} 
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="form-row">
-                            <div className="form-group">
-                              <label>Имэйл</label>
-                              <input 
-                                type="email" 
-                                name="email" 
-                                value={profile.email} 
-                                onChange={handleProfileChange} 
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Хаяг</label>
-                              <input 
-                                type="text" 
-                                name="address" 
-                                value={profile.address} 
-                                onChange={handleProfileChange} 
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="form-row">
-                            <div className="form-group">
-                              <label>Төрсөн огноо</label>
-                              <input 
-                                type="date" 
-                                name="birthdate" 
-                                value={profile.birthdate} 
-                                onChange={handleProfileChange} 
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Хүйс</label>
-                              <select 
-                                name="gender" 
-                                value={profile.gender} 
+                        <form className="profile-form">
+                          {["name", "phone", "email", "address", "birthdate", "allergies"].map((field) => (
+                            <div className="form-group" key={field}>
+                              <label>{
+                                {
+                                  name: "Нэр",
+                                  phone: "Утас",
+                                  email: "Имэйл",
+                                  address: "Хаяг",
+                                  birthdate: "Төрсөн огноо",
+                                  allergies: "Харшил",
+                                }[field]
+                              }</label>
+                              <input
+                                type={field === "birthdate" ? "date" : field === "email" ? "email" : "text"}
+                                name={field}
+                                value={profile[field] || ""}
                                 onChange={handleProfileChange}
-                              >
-                                <option value="Эрэгтэй">Эрэгтэй</option>
-                                <option value="Эмэгтэй">Эмэгтэй</option>
-                                <option value="Бусад">Бусад</option>
-                              </select>
-                            </div>
-                          </div>
-                          
-                          <div className="form-row">
-                            <div className="form-group">
-                              <label>Харшил</label>
-                              <input 
-                                type="text" 
-                                name="allergies" 
-                                value={profile.allergies} 
-                                onChange={handleProfileChange} 
                               />
                             </div>
-                            <div className="form-group">
-                              <label>Цусны бүлэг</label>
-                              <select 
-                                name="bloodType" 
-                                value={profile.bloodType} 
-                                onChange={handleProfileChange}
-                              >
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                              </select>
-                            </div>
+                          ))}
+
+                          <div className="form-group">
+                            <label>Хүйс</label>
+                            <select
+                              name="gender"
+                              value={profile.gender}
+                              onChange={handleProfileChange}
+                            >
+                              <option value="">Сонгоно уу</option>
+                              <option value="Эрэгтэй">Эрэгтэй</option>
+                              <option value="Эмэгтэй">Эмэгтэй</option>
+                              <option value="Бусад">Бусад</option>
+                            </select>
                           </div>
-                        </div>
+
+                          <div className="form-group">
+                            <label>Цусны бүлэг</label>
+                            <select
+                              name="bloodType"
+                              value={profile.bloodType}
+                              onChange={handleProfileChange}
+                            >
+                              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => (
+                                <option key={type} value={type}>{type}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </form>
                       ) : (
                         <div className="profile-info">
-                          <div className="info-row">
-                            <div className="info-group">
-                              <label>Нэр:</label>
-                              <p>{profile.name}</p>
+                          {Object.entries({
+                            Нэр: profile.name,
+                            Утас: profile.phone,
+                            Имэйл: profile.email,
+                            Хаяг: profile.address,
+                            "Төрсөн огноо": profile.birthdate,
+                            Хүйс: profile.gender,
+                            Харшил: profile.allergies,
+                            "Цусны бүлэг": profile.bloodType,
+                          }).map(([label, value]) => (
+                            <div className="info-group" key={label}>
+                              <label>{label}:</label>
+                              <p>{value}</p>
                             </div>
-                            <div className="info-group">
-                              <label>Утас:</label>
-                              <p>{profile.phone}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="info-row">
-                            <div className="info-group">
-                              <label>Имэйл:</label>
-                              <p>{profile.email}</p>
-                            </div>
-                            <div className="info-group">
-                              <label>Хаяг:</label>
-                              <p>{profile.address}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="info-row">
-                            <div className="info-group">
-                              <label>Төрсөн огноо:</label>
-                              <p>{profile.birthdate}</p>
-                            </div>
-                            <div className="info-group">
-                              <label>Хүйс:</label>
-                              <p>{profile.gender}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="info-row">
-                            <div className="info-group">
-                              <label>Харшил:</label>
-                              <p>{profile.allergies}</p>
-                            </div>
-                            <div className="info-group">
-                              <label>Цусны бүлэг:</label>
-                              <p>{profile.bloodType}</p>
-                            </div>
-                          </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -311,7 +275,6 @@ export function MyHistoryContent() {
               {activeTab === "appointments" && (
                 <div className="appointments-list">
                   <h2>Цаг захиалгын түүх</h2>
-
                   <table className="appointments-table">
                     <thead>
                       <tr>
@@ -325,20 +288,27 @@ export function MyHistoryContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {appointments.map((appointment) => (
-                        <tr key={appointment.id}>
-                          <td>{appointment.date}</td>
-                          <td>{appointment.time}</td>
-                          <td>{appointment.doctor}</td>
-                          <td>{appointment.service}</td>
+                      {appointments.map((a) => (
+                        <tr key={a.id}>
+                          <td>{a.date}</td>
+                          <td>{a.time}</td>
+                          <td>{a.doctor}</td>
+                          <td>{a.service}</td>
                           <td>
-                            <span className={`status ${appointment.status === "Дууссан" ? "completed" : "upcoming"}`}>
-                              {appointment.status}
+                            <span className={`status ${a.status === "Дууссан" ? "completed" : "upcoming"}`}>
+                              {a.status}
                             </span>
                           </td>
-                          <td>{appointment.cost}</td>
+                          <td>{a.cost}</td>
                           <td>
-                            {appointment.status !== "Дууссан" && <button className="button small">Цуцлах</button>}
+                            {a.status !== "Дууссан" && a.status !== "Цуцалсан" && (
+                              <button
+                                className="button small"
+                                onClick={() => cancelAppointment(a.id)}
+                              >
+                                Цуцлах
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -349,42 +319,31 @@ export function MyHistoryContent() {
 
               {activeTab === "treatments" && (
                 <div className="treatments-list">
-                  <h2 style={{  }}>Эмчилгээний түүх</h2>
-
+                  <h2>Эмчилгээний түүх</h2>
                   <div className="treatment-cards">
-                    {appointments.map((appointment) => {
-                      const [year, month, day] = appointment.date.split("-")
+                    {appointments.map((a) => {
+                      const [year, month, day] = a.date.split("-")
                       return (
-                        <div className="treatment-card" key={appointment.id}>
+                        <div className="treatment-card" key={a.id}>
                           <div className="treatment-date">
                             <div className="date-number">
                               <div className="month-day">{day}</div>
                               <div className="month-number">{month}</div>
                             </div>
                             <div className="treatment-info">
-                              <div className="treatment-date-text">{appointment.date}</div>
-                              <div className="treatment-doctor">Эмчлэгч эмч: {appointment.doctor}</div>
-                              <div className="treatment-type">Үйлч: {appointment.service}</div>
+                              <div className="treatment-date-text">{a.date}</div>
+                              <div className="treatment-doctor">Эмч: {a.doctor}</div>
+                              <div className="treatment-type">Үйлчилгээ: {a.service}</div>
                             </div>
                           </div>
                           <div className="treatment-details">
-                            <p>
-                              <strong>Онош:</strong> {appointment.diagnosis}
-                            </p>
-                            <p>
-                              <strong>Эмчилгээ:</strong> {appointment.service}
-                            </p>
-                            <p>
-                              <strong>Зөвлөмж:</strong> {appointment.notes}
-                            </p>
-                          
+                            <p><strong>Онош:</strong> {a.diagnosis || "—"}</p>
+                            <p><strong>Эмчилгээ:</strong> {a.service}</p>
+                            <p><strong>Зөвлөмж:</strong> {a.notes || "—"}</p>
                           </div>
                         </div>
                       )
                     })}
-                  </div>
-                  <div className="pagination">
-                    <span>1 - 5</span>
                   </div>
                 </div>
               )}

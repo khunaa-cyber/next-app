@@ -10,10 +10,9 @@ const DoctorSchema = new mongoose.Schema({
       type:String,
       required:true
     },
-    email:{
+   email:{
       type:String,
-      required:true
-    },
+      required:true    },
     address:{
       type:String,
       required:true
@@ -50,6 +49,15 @@ const DoctorSchema = new mongoose.Schema({
       type:String,
       required:true
     },
+      password: { 
+    type: String, 
+    required: true 
+  },
+    role: { 
+    type: String, 
+    enum: ['client', 'doctor', 'admin'], 
+    default: 'doctor'
+  },
 });
 
 export default mongoose.models.Doctor || mongoose.model('Doctor', DoctorSchema);

@@ -4,6 +4,5 @@ export default function Loading() {
       <div className="loading-spinner"></div>
       <p>Уншиж байна...</p>
     </div>
-  )
+  );
 }
-

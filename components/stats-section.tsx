@@ -24,6 +24,5 @@ export function StatsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-

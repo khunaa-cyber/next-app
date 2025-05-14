@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { useAuth } from "@/context/auth-context"
-import { appointmentsAPI } from "@/lib/api"
-import "./book-online.css"
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { useAuth } from "@/context/auth-context";
+import { appointmentsAPI } from "@/lib/api";
+import "./book-online.css";
 
 type Service = {
-  id: string
-  name: string
-}
+  id: string;
+  name: string;
+};
 
 type Doctor = {
-  id: string
-  name: string
-  specialty: string
-}
+  id: string;
+  name: string;
+  specialty: string;
+};
 
 export default function BookOnlinePage() {
-  const searchParams = useSearchParams()
-  const initialService = searchParams.get("service")
-  const initialDoctor = searchParams.get("doctor")
-  const router = useRouter()
-  const { user } = useAuth()
+  const searchParams = useSearchParams();
+  const initialService = searchParams.get("service");
+  const initialDoctor = searchParams.get("doctor");
+  const router = useRouter();
+  const { user } = useAuth();
 
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     service: initialService || "",
     doctor: initialDoctor || "",
@@ -36,24 +36,24 @@ export default function BookOnlinePage() {
     phone: "",
     email: user?.email || "",
     notes: "",
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [services, setServices] = useState<Service[]>([])
-  const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchBooking = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const servicesRes = await fetch("/api/services")
-        const servicesData = await servicesRes.json() as {
-          success: boolean
-          services: { _id: string; title: string }[]
-        }
+        const servicesRes = await fetch("/api/services");
+        const servicesData = (await servicesRes.json()) as {
+          success: boolean;
+          services: { _id: string; title: string }[];
+        };
 
         if (servicesData.success) {
           setServices(
@@ -61,14 +61,14 @@ export default function BookOnlinePage() {
               id: s._id,
               name: s.title,
             }))
-          )
+          );
         }
 
-        const doctorsRes = await fetch("/api/doctors")
-        const doctorsData = await doctorsRes.json() as {
-          success: boolean
-          doctors: { _id: string; name: string; position: string }[]
-        }
+        const doctorsRes = await fetch("/api/doctors");
+        const doctorsData = (await doctorsRes.json()) as {
+          success: boolean;
+          doctors: { _id: string; name: string; position: string }[];
+        };
 
         if (doctorsData.success) {
           setDoctors(
@@ -77,18 +77,18 @@ export default function BookOnlinePage() {
               name: d.name,
               specialty: d.position,
             }))
-          )
+          );
         }
       } catch (err) {
-        console.error("Fetch error:", err)
-        setError("Мэдээлэл ачааллахад алдаа гарлаа. Дахин оролдоно уу.")
+        console.error("Fetch error:", err);
+        setError("Мэдээлэл ачааллахад алдаа гарлаа. Дахин оролдоно уу.");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchBooking()
-  }, [])
+    fetchBooking();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -96,54 +96,53 @@ export default function BookOnlinePage() {
         ...prev,
         name: user.name,
         email: user.email,
-      }))
+      }));
     }
-  }, [user])
+  }, [user]);
 
-  const availableTimes = ["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"]
+  const availableTimes = ["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const nextStep = () => setStep((prev) => prev + 1)
-  const prevStep = () => setStep((prev) => prev - 1)
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError("")
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
 
     try {
       if (!user) {
-        router.push("/sign?redirect=book-online")
-        return
+        router.push("/sign?redirect=book-online");
+        return;
       }
 
-      const response = await appointmentsAPI.create({
+      const response = (await appointmentsAPI.create({
         userId: user.id,
         doctorId: formData.doctor,
         date: formData.date,
         time: formData.time,
         service: services.find((s) => s.id === formData.service)?.name || "",
-        phone: formData.phone,
-        email: formData.email,
-        notes: formData.notes,
-      }) as { success: boolean; message?: string }
+      })) as { success: boolean; message?: string };
 
       if (response.success) {
-        setIsSuccess(true)
+        setIsSuccess(true);
       } else {
-        setError(response.message || "Цаг захиалахад алдаа гарлаа.")
+        setError(response.message || "Цаг захиалахад алдаа гарлаа.");
       }
     } catch (err) {
-      console.error("Appointment error:", err)
-      setError("Цаг захиалахад алдаа гарлаа.")
+      console.error("Appointment error:", err);
+      setError("Цаг захиалахад алдаа гарлаа.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <>
@@ -167,13 +166,18 @@ export default function BookOnlinePage() {
                 <i className="fa-solid fa-check"></i>
               </div>
               <h2>Цаг захиалга амжилттай!</h2>
-              <p>Таны цаг захиалга амжилттай бүртгэгдлээ. Бид тантай удахгүй холбогдох болно.</p>
+              <p>
+                Таны цаг захиалга амжилттай бүртгэгдлээ. Бид тантай удахгүй
+                холбогдох болно.
+              </p>
               <div className="booking-details">
                 <p>
-                  <strong>Үйлчилгээ:</strong> {services.find((s) => s.id === formData.service)?.name}
+                  <strong>Үйлчилгээ:</strong>{" "}
+                  {services.find((s) => s.id === formData.service)?.name}
                 </p>
                 <p>
-                  <strong>Эмч:</strong> {doctors.find((d) => d.id === formData.doctor)?.name}
+                  <strong>Эмч:</strong>{" "}
+                  {doctors.find((d) => d.id === formData.doctor)?.name}
                 </p>
                 <p>
                   <strong>Огноо:</strong> {formData.date}
@@ -182,7 +186,10 @@ export default function BookOnlinePage() {
                   <strong>Цаг:</strong> {formData.time}
                 </p>
               </div>
-              <button className="button" onClick={() => window.location.reload()}>
+              <button
+                className="button"
+                onClick={() => window.location.reload()}
+              >
                 Шинэ цаг захиалах
               </button>
             </div>
@@ -217,15 +224,26 @@ export default function BookOnlinePage() {
                       {services.map((service) => (
                         <div
                           key={service.id}
-                          className={`service-option ${formData.service === service.id ? "selected" : ""}`}
-                          onClick={() => setFormData((prev) => ({ ...prev, service: service.id }))}
+                          className={`service-option ${
+                            formData.service === service.id ? "selected" : ""
+                          }`}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              service: service.id,
+                            }))
+                          }
                         >
                           {service.name}
                         </div>
                       ))}
                     </div>
                     <div className="form-buttons">
-                      <button className="button next-button" onClick={nextStep} disabled={!formData.service}>
+                      <button
+                        className="button next-button"
+                        onClick={nextStep}
+                        disabled={!formData.service}
+                      >
                         Дараах
                       </button>
                     </div>
@@ -250,7 +268,11 @@ export default function BookOnlinePage() {
                       <button className="button prev-button" onClick={prevStep}>
                         Өмнөх
                       </button>
-                      <button className="button next-button" onClick={nextStep} disabled={!formData.doctor}>
+                      <button
+                        className="button next-button"
+                        onClick={nextStep}
+                        disabled={!formData.doctor}
+                      >
                         Дараах
                       </button>
                     </div>
@@ -281,8 +303,12 @@ export default function BookOnlinePage() {
                             {availableTimes.map((time) => (
                               <div
                                 key={time}
-                                className={`time-slot ${formData.time === time ? "selected" : ""}`}
-                                onClick={() => setFormData((prev) => ({ ...prev, time }))}
+                                className={`time-slot ${
+                                  formData.time === time ? "selected" : ""
+                                }`}
+                                onClick={() =>
+                                  setFormData((prev) => ({ ...prev, time }))
+                                }
                               >
                                 {time}
                               </div>
@@ -358,13 +384,22 @@ export default function BookOnlinePage() {
                       </div>
 
                       <div className="form-buttons">
-                        <button type="button" className="button prev-button" onClick={prevStep}>
+                        <button
+                          type="button"
+                          className="button prev-button"
+                          onClick={prevStep}
+                        >
                           Өмнөх
                         </button>
                         <button
                           type="submit"
                           className="button submit-button"
-                          disabled={isSubmitting || !formData.name || !formData.phone || !formData.email}
+                          disabled={
+                            isSubmitting ||
+                            !formData.name ||
+                            !formData.phone ||
+                            !formData.email
+                          }
                         >
                           {isSubmitting ? "Илгээж байна..." : "Цаг захиалах"}
                         </button>
