@@ -1,17 +1,48 @@
 // Base API URL
 const API_BASE_URL = "/api";
 
-// Helper function to fetch API data with error handling and type safety
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+// Define response types
+export type AuthResponse = {
+  success: boolean;
+  user?: {
+    _id?: string;
+    id?: string;
+    name: string;
+    email: string;
+    role: "client" | "doctor" | "admin";
+  };
+  message?: string;
+  token?: string;
+};
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-      throw new Error(errorData.message || `API error: ${response.status}`);
+// Generic fetch function with error handling
+async function fetchAPI<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  try {
+    console.log(`API Request: ${endpoint}`, options?.method || "GET");
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    console.log(`API Response status: ${response.status}`);
+
+    // Check if the response is empty
+    const contentType = response.headers.get("content-type");
+    let data: any = {};
+
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      console.log("Response is not JSON");
+      // For non-JSON responses (like 204 No Content)
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      return {} as T;
     }
 
-    return await response.json();
+    // IMPORTANT: Don't throw an error here, return the response with success: false
+    // This allows the auth context to handle the error properly
+    return data as T;
   } catch (error) {
     console.error(`API fetch error for ${endpoint}:`, error);
     throw error;
@@ -20,24 +51,60 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 // Auth API
 export const authAPI = {
-  login: async (email: string, password: string) => {
-    return fetchAPI("/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    console.log("authAPI.login called with email:", email);
+    try {
+      const response = await fetchAPI<AuthResponse>("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log("Login response:", response);
+      return response;
+    } catch (error) {
+      console.error("Login error:", error);
+      // Return a failed response instead of throwing
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Login failed",
+      };
+    }
   },
 
-  register: async (name: string, email: string, password: string) => {
-    return fetchAPI("/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+  register: async (
+    name: string,
+    email: string,
+    password: string,
+    role = "client"
+  ): Promise<AuthResponse> => {
+    console.log(
+      "authAPI.register called with email:",
+      email,
+      "and role:",
+      role
+    );
+    try {
+      const response = await fetchAPI<AuthResponse>("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+
+      console.log("Register response:", response);
+      return response;
+    } catch (error) {
+      console.error("Register error:", error);
+      // Return a failed response instead of throwing
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Registration failed",
+      };
+    }
   },
 
-  forgotPassword: async (email: string) => {
-    return fetchAPI("/auth/forgot-password", {
+  forgotPassword: async (email: string): Promise<AuthResponse> => {
+    return fetchAPI<AuthResponse>("/auth/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
@@ -48,14 +115,34 @@ export const authAPI = {
 // Doctors API
 export const doctorsAPI = {
   getAll: async () => {
- return fetchAPI<Doctor[]>(`/doctors`);
+    return fetchAPI("/doctors");
+  },
+
+  getById: async (id: string) => {
+    return fetchAPI(`/doctors/${id}`);
   },
 
   getReviews: async (doctorId: string) => {
-    return fetchAPI<Review[]>(`/doctors/${doctorId}/reviews`);
+    return fetchAPI(`/doctors/${doctorId}/reviews`);
   },
 
-  submitReview: async (doctorId: string, review: Review) => {
+  create: async (doctorData: any) => {
+    return fetchAPI("/doctors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(doctorData),
+    });
+  },
+
+  submitReview: async (
+    doctorId: string,
+    review: {
+      userId: string;
+      userName: string;
+      rating: number;
+      comment: string;
+    }
+  ) => {
     return fetchAPI(`/doctors/${doctorId}/reviews`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,25 +154,27 @@ export const doctorsAPI = {
 // Services API
 export const servicesAPI = {
   getAll: async () => {
-    return fetchAPI<Service[]>("/services");
+    return fetchAPI("/services");
   },
 
   getById: async (id: number) => {
-    return fetchAPI<Service>(`/services/${id}`);
+    return fetchAPI(`/services/${id}`);
   },
 };
 
 // Appointments API
 export const appointmentsAPI = {
-  getByUserId: async (userId: string) => {
-    return fetchAPI<Appointment[]>(`/appointments?userId=${userId}`);
-  },
-
   getById: async (id: number) => {
-    return fetchAPI<Appointment>(`/appointments/${id}`);
+    return fetchAPI(`/appointments/${id}`);
   },
 
-  create: async (appointment: { userId: string; doctorId: string; date: string; time: string; service: string }) => {
+  create: async (appointment: {
+    userId: string;
+    doctorId: string;
+    date: string;
+    time: string;
+    service: string;
+  }) => {
     return fetchAPI("/appointments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -100,18 +189,47 @@ export const appointmentsAPI = {
       body: JSON.stringify({ status }),
     });
   },
+  addPatientNote: async (noteData: {
+    patientId: string;
+    doctorId: string;
+    note: string;
+    advice: string;
+    appointmentsNext: string;
+    date: string;
+  }) => {
+    return fetchAPI(`/appointments/${noteData.patientId}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(noteData),
+    });
+  },
+  getPatientNotes: async (patientId: string) => {
+    return fetchAPI(`/appointments/${patientId}/notes`);
+  },
+  getAll: async () => {
+    return fetchAPI("/appointments");
+  },
 
   cancel: async (id: number) => {
     return fetchAPI(`/appointments/${id}`, {
       method: "DELETE",
     });
   },
+  getByDoctorId: async (doctorId: string) => {
+    return fetchAPI(`/appointments?doctorId=${doctorId}`);
+  },
+  getByUserId: async (userId: string) => {
+    return fetchAPI(`/appointments?userId=${userId}`);
+  },
 };
 
 // User API
 export const userAPI = {
   getById: async (id: string) => {
-    return fetchAPI<User>(`/users/${id}`);
+    return fetchAPI(`/users/${id}`);
+  },
+  getAll: async () => {
+    return fetchAPI(`/users`);
   },
 
   updateProfile: async (id: string, profileData: any) => {
@@ -144,65 +262,44 @@ export const feedbackAPI = {
 // FAQ API
 export const faqAPI = {
   getAll: async () => {
-    return fetchAPI<FaqItem[]>("/faq");
+    return fetchAPI("/faq");
   },
 };
 
 export const newsAPI = {
   getAll: async () => {
-    return fetchAPI<{ news: any[] }>("/news");
+    return fetchAPI("/news");
   },
 
   getById: async (id: string) => {
-    return fetchAPI<any>(`/news/${id}`);
-  },  
-}
+    return fetchAPI(`/news/${id}`);
+  },
 
-// Define TypeScript interfaces for the API responses
-interface Doctor {
-  id: string;
-  name: string;
-  position: string;
-  branch: string;
-  experience: string;
-  education: string;
-  specialization: string;
-  image: string;
-}
+  create: async (newsData: {
+    title: string;
+    content: string;
+    image: string;
+    description: string;
+    category?: string;
+  }) => {
+    return fetchAPI("/news", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newsData),
+    });
+  },
 
-interface Review {
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-}
+  update: async (id: string, newsData: any) => {
+    return fetchAPI(`/news/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newsData),
+    });
+  },
 
-interface Service {
-  id: number;
-  title: string;
-  description: string;
-  images: string[];
-  price: string;
-}
-
-interface Appointment {
-  id: number;
-  userId: string;
-  doctorId: string;
-  date: string;
-  time: string;
-  status: string;
-  service: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-}
-
-interface FaqItem {
-  question: string;
-  answer: string;
-}
+  delete: async (id: string) => {
+    return fetchAPI(`/news/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
