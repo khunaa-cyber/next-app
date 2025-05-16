@@ -16,7 +16,7 @@
 
 .page-banner h1 {
   font-size: 3rem;
-  color: var(--blue);
+  color: var(white);
   margin-bottom: 0.5rem;
 }
 
@@ -62,13 +62,6 @@
   line-height: 1.6;
 }
 
-/* Устгасан: blog-author (хуучин байршил) */
-/* .blog-author {
-  font-size: 1.4rem;
-  color: #555;
-  margin-bottom: 1.5rem;
-  font-style: italic;
-} */
 
 .blog-content p {
   font-size: 1.7rem;
