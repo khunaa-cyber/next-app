@@ -19,6 +19,10 @@ const AppointmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    default: "",
+  },
   service: {
     type: String,
     required: true,

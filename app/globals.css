@@ -33,8 +33,9 @@ body {
 
 /* Button styles */
 .button {
-  height: 3.5rem;
-  width: 15rem;
+  min-height: 3.5rem;
+  min-width: 10rem;
+  padding: 0.8rem 1.5rem;
   background-color: var(--blue);
   color: var(--white);
   text-transform: capitalize;
@@ -43,6 +44,11 @@ body {
   border-radius: 0.5rem;
   margin: 1rem 0.5rem;
   border: 0.1rem solid var(--blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .button:hover {
@@ -1066,9 +1072,8 @@ header .button:hover {
 }
 
 .button.small {
-  height: 3rem;
-  width: auto;
-  padding: 0 1.5rem;
+  min-height: 3rem;
+  padding: 0.5rem 1rem;
   font-size: 1.4rem;
   margin: 0.3rem;
 }

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     await connectToDatabase()
 
     const body = await request.json()
-    const { userId, doctorId, date, time, service } = body
+    const { userId, doctorId, date, time, service, phone = "", notes = "" } = body
 
     if (!userId || !doctorId || !date || !time || !service) {
       return NextResponse.json(
@@ -78,7 +78,10 @@ export async function POST(request: Request) {
     })
 
     if (existingAppointment) {
-      return NextResponse.json({ success: false, message: "This time slot is already booked" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: "Энэ цаг аль хэдийн захиалагдсан байна. Өөр цаг сонгоно уу." },
+        { status: 400 },
+      )
     }
 
     // shine tsag zahialga uusgeh
@@ -88,6 +91,8 @@ export async function POST(request: Request) {
       date,
       time,
       service,
+      phone,
+      notes,
       status: "Хүлээгдэж буй",
     })
 

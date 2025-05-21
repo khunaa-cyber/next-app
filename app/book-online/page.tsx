@@ -19,6 +19,14 @@ type Doctor = {
   specialty: string;
 };
 
+type Appointment = {
+  _id: string
+  date: string
+  time: string
+  doctorId: string
+  status: string
+}
+
 export default function BookOnlinePage() {
   const searchParams = useSearchParams();
   const initialService = searchParams.get("service");
@@ -44,6 +52,8 @@ export default function BookOnlinePage() {
   const [services, setServices] = useState<Service[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [error, setError] = useState("");
+  const [bookedAppointments, setBookedAppointments] = useState<Appointment[]>([])
+  const [availableTimes, setAvailableTimes] = useState<string[]>(["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"])
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -100,7 +110,39 @@ export default function BookOnlinePage() {
     }
   }, [user]);
 
-  const availableTimes = ["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"];
+  useEffect(() => {
+    const fetchBookedAppointments = async () => {
+      if (formData.doctor && formData.date) {
+        try {
+          const response = await fetch(`/api/appointments?doctorId=${formData.doctor}&date=${formData.date}`)
+          const data = await response.json()
+
+          if (data.success) {
+            const activeAppointments = data.appointments.filter((app: Appointment) => app.status !== "Цуцалсан")
+            setBookedAppointments(activeAppointments)
+
+            updateAvailableTimes(activeAppointments)
+          }
+        } catch (error) {
+          console.error("Error fetching booked appointments:", error)
+        }
+      }
+    }
+
+    fetchBookedAppointments()
+  }, [formData.doctor, formData.date])
+
+  const updateAvailableTimes = (bookedApps: Appointment[]) => {
+    const allTimes = ["09:00", "11:00", "13:00", "14:00", "16:00", "18:00"]
+    const bookedTimes = bookedApps.map((app) => app.time)
+
+    const available = allTimes.filter((time) => !bookedTimes.includes(time))
+    setAvailableTimes(available)
+
+    if (formData.time && bookedTimes.includes(formData.time)) {
+      setFormData((prev) => ({ ...prev, time: "" }))
+    }
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -306,6 +348,7 @@ export default function BookOnlinePage() {
                       {formData.date && (
                         <div className="time-options">
                           <label>Боломжтой цагууд</label>
+                          {availableTimes.length > 0 ? (
                           <div className="time-slots">
                             {availableTimes.map((time) => (
                               <div
@@ -321,6 +364,11 @@ export default function BookOnlinePage() {
                               </div>
                             ))}
                           </div>
+                          ) : (
+                            <p className="no-times-message">
+                              Сонгосон өдөр боломжтой цаг байхгүй байна. Өөр өдөр сонгоно уу.
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
