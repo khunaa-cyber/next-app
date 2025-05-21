@@ -1031,11 +1031,6 @@ export function AdminDashboardContent() {
                 onSubmit={async (e) => {
  
                   e.preventDefault();
-                  console.log("Илгээж буй ID:", doctorToEdit.id);
-                  console.log("doctorFormData:", doctorFormData);
-                  console.log("Хадгалах гэж буй эмч:", doctorToEdit);
-                  console.log("doctorToEdit.id:", doctorToEdit.id);
-                  console.log("typeof:", typeof doctorToEdit.id);
 
                   const response = await fetch(`/api/doctors/${doctorToEdit.id}`, {
                     method: "PUT",
@@ -1112,7 +1107,7 @@ export function AdminDashboardContent() {
                       type="text"
                       id="profession"
                       name="profession"
-                      value={doctorFormData.profession}
+                      value={doctorFormData.profession ?? ""}
                       onChange={handleDoctorFormChange}
                       required
                     />
@@ -1124,7 +1119,7 @@ export function AdminDashboardContent() {
                       type="text"
                       id="specialization"
                       name="specialization"
-                      value={doctorFormData.specialization}
+                      value={doctorFormData.specialization ?? ""}
                       onChange={handleDoctorFormChange}
                       required
                     />
@@ -1138,7 +1133,7 @@ export function AdminDashboardContent() {
                       type="text"
                       id="experience"
                       name="experience"
-                      value={doctorFormData.experience}
+                      value={doctorFormData.experience ?? ""}
                       onChange={handleDoctorFormChange}
                       required
                     />
@@ -1150,7 +1145,7 @@ export function AdminDashboardContent() {
                       type="text"
                       id="education"
                       name="education"
-                      value={doctorFormData.education}
+                      value={doctorFormData.education ?? ""}
                       onChange={handleDoctorFormChange}
                       required
                     />
@@ -1162,7 +1157,7 @@ export function AdminDashboardContent() {
                   <textarea
                     id="summary"
                     name="summary"
-                    value={doctorFormData.summary}
+                    value={doctorFormData.summary ?? ""}
                     onChange={handleDoctorFormChange}
                     rows={3}
                     required
@@ -1174,7 +1169,7 @@ export function AdminDashboardContent() {
                   <textarea
                     id="skills"
                     name="skills"
-                    value={doctorFormData.skills}
+                    value={doctorFormData.skills ?? ""}
                     onChange={handleDoctorFormChange}
                     rows={3}
                     required
@@ -1188,7 +1183,7 @@ export function AdminDashboardContent() {
                       type="text"
                       id="image"
                       name="image"
-                      value={doctorFormData.image}
+                      value={doctorFormData.image ?? ""}
                       onChange={handleDoctorFormChange}
                       required
                     />
