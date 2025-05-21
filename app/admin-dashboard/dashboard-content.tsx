@@ -100,6 +100,12 @@ interface DoctorForm {
 export function AdminDashboardContent() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEditingDoctor, setIsEditingDoctor] = useState(false);
+  const [doctorToEdit, setDoctorToEdit] = useState<Doctor | null>(null);
+
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
+
 
   // Өгөгдлийн төлөвүүд
   const [stats, setStats] = useState({
@@ -653,6 +659,7 @@ export function AdminDashboardContent() {
                       </tr>
                     </thead>
                     <tbody>
+
                       {doctors.map((doctor) => (
                         <tr key={doctor.id}>
                           <td>{doctor.name}</td>
@@ -660,8 +667,23 @@ export function AdminDashboardContent() {
                           <td>{doctor.appointments}</td>
                           <td>{doctor.rating}</td>
                           <td>
-                            <button className="button small">Засах</button>
-                            <button className="button small delete">
+                            <button 
+                              className="button small"
+                               onClick={() => {
+                                setDoctorFormData(doctor);
+                                setDoctorToEdit(doctor); 
+                                setIsEditingDoctor(true);
+                              }}
+                            >
+                              Засах
+                            </button>
+                            <button 
+                              className="button small delete"
+                              onClick={() => {
+                                setDoctorToDelete(doctor);
+                                setIsDeleteConfirmOpen(true);
+                  }}
+                            >
                               Устгах
                             </button>
                           </td>
@@ -996,6 +1018,262 @@ export function AdminDashboardContent() {
             </div>
           </div>
         )}
+        {/* Edit Doctor Modal */}
+        {isEditingDoctor && doctorToEdit && (
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <div className="modal-header">
+                <h2>Эмч засах</h2>
+                <button className="modal-close" onClick={() => setIsEditingDoctor(false)}>×</button>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+ 
+                  e.preventDefault();
+                  console.log("Илгээж буй ID:", doctorToEdit.id);
+                  console.log("doctorFormData:", doctorFormData);
+                  console.log("Хадгалах гэж буй эмч:", doctorToEdit);
+                  console.log("doctorToEdit.id:", doctorToEdit.id);
+                  console.log("typeof:", typeof doctorToEdit.id);
+
+                  const response = await fetch(`/api/doctors/${doctorToEdit.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(doctorFormData),
+                  });
+
+                  const data = await response.json();
+
+                  if (data.success) {
+                    const updated = await doctorsAPI.getAll();
+                    setDoctors(updated.doctors); // жагсаалтыг шинэчилнэ
+                    setIsEditingDoctor(false);
+                  } else {
+                    console.error("Хадгалах алдаа:", data.message);
+                  }
+                }}
+                className="doctor-form"
+              >
+                <div className="form-group">
+                  <label htmlFor="name">Нэр *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={doctorFormData.name}
+                    onChange={handleDoctorFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="phone">Утас *</label>
+                    <input
+                      type="text"
+                      id="phone"
+                      name="phone"
+                      value={doctorFormData.phone ?? ""}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="email">Имэйл *</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={doctorFormData.email ?? ""}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="address">Хаяг *</label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    value={doctorFormData.address ?? ""}
+                    onChange={handleDoctorFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="profession">Мэргэжил *</label>
+                    <input
+                      type="text"
+                      id="profession"
+                      name="profession"
+                      value={doctorFormData.profession}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="specialization">Мэргэшил *</label>
+                    <input
+                      type="text"
+                      id="specialization"
+                      name="specialization"
+                      value={doctorFormData.specialization}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="experience">Туршлага *</label>
+                    <input
+                      type="text"
+                      id="experience"
+                      name="experience"
+                      value={doctorFormData.experience}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="education">Боловсрол *</label>
+                    <input
+                      type="text"
+                      id="education"
+                      name="education"
+                      value={doctorFormData.education}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="summary">Товч танилцуулга *</label>
+                  <textarea
+                    id="summary"
+                    name="summary"
+                    value={doctorFormData.summary}
+                    onChange={handleDoctorFormChange}
+                    rows={3}
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="skills">Ур чадварууд *</label>
+                  <textarea
+                    id="skills"
+                    name="skills"
+                    value={doctorFormData.skills}
+                    onChange={handleDoctorFormChange}
+                    rows={3}
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="image">Зураг (URL) *</label>
+                    <input
+                      type="text"
+                      id="image"
+                      name="image"
+                      value={doctorFormData.image}
+                      onChange={handleDoctorFormChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="Branch">Салбар *</label>
+                    <select
+                      id="Branch"
+                      name="Branch"
+                      value={doctorFormData.Branch}
+                      onChange={handleDoctorFormChange}
+                      required
+                    >
+                      <option value="Салбар 1">Салбар 1</option>
+                      <option value="Салбар 2">Салбар 2</option>
+                      <option value="Салбар 3">Салбар 3</option>
+                      <option value="Салбар 4">Салбар 4</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password">Нууц үг *</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={doctorFormData.password || ""}
+                    onChange={handleDoctorFormChange}
+                    required
+                  />
+                </div>
+                <div className="form-buttons">
+                  <button type="button" className="button secondary" onClick={() => setIsEditingDoctor(false)}>
+                    Цуцлах
+                  </button>
+                  <button type="submit" className="button">Хадгалах</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Doctor Modal */}
+        {isDeleteConfirmOpen && doctorToDelete && (
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <h3>Эмч {doctorToDelete.name}-г устгахдаа итгэлтэй байна уу?</h3>
+              <div className="form-buttons">
+                <button
+                  className="button secondary"
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    setDoctorToDelete(null);
+                  }}
+                >
+                  Цуцлах
+                </button>
+                <button
+                  className="button delete"
+                 onClick={async () => {
+                  const res = await fetch(`/api/doctors/${doctorToDelete.id}`, {
+                    method: "DELETE",
+                  });
+
+                  const data = await res.json();
+
+                  if (data.success) {
+                    const updated = await doctorsAPI.getAll();
+                    setDoctors(updated.doctors);
+                    setIsDeleteConfirmOpen(false);
+                    setDoctorToDelete(null);
+                  } else {
+                    console.error("Устгах алдаа:", data.message);
+                  }
+                }}
+                >
+                  Устгах
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </AuthWrapper>
   );

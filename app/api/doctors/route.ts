@@ -12,15 +12,21 @@ export interface ApiResponse {
 
 export async function GET() {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    // db-es emch nariin medeelel avah
-    const doctors = await Doctor.find({}).sort({ name: 1 })
+    // db-ees emch nariin medeelel avah
+    const doctors = await Doctor.find({}).sort({ name: 1 });
 
-    return NextResponse.json({ success: true, doctors })
+    // _id-g id bolgon huvirgaj buh emchdiin medeelliig tohiruulj baina
+    const transformedDoctors = doctors.map((doc) => ({
+      ...doc.toObject(),             // MongoDB document-ыг энгийн object болгоно
+      id: doc._id.toString(),       // _id-г string болгож id нэртэй property-д хувиргана
+    }));
+
+    return NextResponse.json({ success: true, doctors: transformedDoctors });
   } catch (error) {
-    console.error("Error fetching doctors:", error)
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
+    console.error("Error fetching doctors:", error);
+    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }
 }
 
