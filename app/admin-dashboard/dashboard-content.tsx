@@ -32,10 +32,11 @@ interface Doctor {
 }
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   price: string;
   appointments: number;
+  description?: string;
 }
 
 interface Appointment {
@@ -106,6 +107,7 @@ export function AdminDashboardContent() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
 
+  const [isAddingService, setIsAddingService] = useState(false);
 
   // Өгөгдлийн төлөвүүд
   const [stats, setStats] = useState({
@@ -141,6 +143,31 @@ export function AdminDashboardContent() {
   });
   const [doctorFormError, setDoctorFormError] = useState("");
   const [doctorFormSuccess, setDoctorFormSuccess] = useState("");
+
+  const [serviceFormData, setServiceFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    images: "",
+  });
+  const [serviceFormError, setServiceFormError] = useState("");
+  const [serviceFormSuccess, setServiceFormSuccess] = useState("");
+
+  // Service edit modal болон устгах confirm modal-д хэрэгтэй state-ууд
+  const [isEditingService, setIsEditingService] = useState(false);
+  const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null);
+  const [serviceEditFormData, setServiceEditFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    images: "",
+  });
+  const [serviceEditFormError, setServiceEditFormError] = useState("");
+  const [serviceEditFormSuccess, setServiceEditFormSuccess] = useState("");
+  const [isDeleteServiceConfirmOpen, setIsDeleteServiceConfirmOpen] = useState(
+    false
+  );
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
 
   // API-аас өгөгдөл татах
   useEffect(() => {
@@ -260,7 +287,7 @@ export function AdminDashboardContent() {
 
           setServices(
             servicesResponse.services.map((service) => ({
-              id: service.id,
+              id: service._id,
               name: service.title,
               price: service.price,
               appointments: serviceAppointmentCounts[service.title] || 0,
@@ -454,6 +481,92 @@ export function AdminDashboardContent() {
       [name]: value,
     }));
   };
+
+  const handleServiceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setServiceFormError("");
+    setServiceFormSuccess("");
+
+    // Basic validation
+    if (
+      !serviceFormData.title ||
+      !serviceFormData.description ||
+      !serviceFormData.price
+    ) {
+      setServiceFormError("Бүх талбарыг бөглөнө үү");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/services", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(serviceFormData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setServiceFormSuccess("Үйлчилгээ амжилттай нэмэгдлээ!");
+        setServiceFormData({
+          title: "",
+          description: "",
+          price: "",
+          images: "",
+        });
+
+        // Refresh services list
+        const servicesResponse = (await servicesAPI.getAll()) as {
+          success: boolean;
+          services: { id: number; title: string; price: string }[];
+        };
+
+        if (servicesResponse.success) {
+          setServices(
+            servicesResponse.services.map((service) => ({
+              id: service.id,
+              name: service.title,
+              price: service.price,
+              appointments: 0,
+            }))
+          );
+        }
+
+        // Close the form after a delay
+        setTimeout(() => {
+          setIsAddingService(false);
+          setServiceFormSuccess("");
+        }, 2000);
+      } else {
+        setServiceFormError(data.message || "Үйлчилгээ нэмэхэд алдаа гарлаа");
+      }
+    } catch (error) {
+      console.error("Error adding service:", error);
+      setServiceFormError("Үйлчилгээ нэмэхэд алдаа гарлаа");
+    }
+  };
+
+  const handleServiceFormChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setServiceFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Service edit form change handler
+  function handleServiceEditFormChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    const { name, value } = e.target;
+    setServiceEditFormData((prev) => ({ ...prev, [name]: value }));
+  }
 
   // Ачаалж байгаа үед харуулах
   if (isLoading) {
@@ -659,7 +772,6 @@ export function AdminDashboardContent() {
                       </tr>
                     </thead>
                     <tbody>
-
                       {doctors.map((doctor) => (
                         <tr key={doctor.id}>
                           <td>{doctor.name}</td>
@@ -667,22 +779,22 @@ export function AdminDashboardContent() {
                           <td>{doctor.appointments}</td>
                           <td>{doctor.rating}</td>
                           <td>
-                            <button 
+                            <button
                               className="button small"
-                               onClick={() => {
+                              onClick={() => {
                                 setDoctorFormData(doctor);
-                                setDoctorToEdit(doctor); 
+                                setDoctorToEdit(doctor);
                                 setIsEditingDoctor(true);
                               }}
                             >
                               Засах
                             </button>
-                            <button 
+                            <button
                               className="button small delete"
                               onClick={() => {
                                 setDoctorToDelete(doctor);
                                 setIsDeleteConfirmOpen(true);
-                  }}
+                              }}
                             >
                               Устгах
                             </button>
@@ -699,9 +811,47 @@ export function AdminDashboardContent() {
               <div className="services-section">
                 <div className="section-header">
                   <h2>Үйлчилгээнүүд</h2>
-                  <button className="button">Үйлчилгээ нэмэх</button>
+                  <button className="button" onClick={() => setIsAddingService(true)}>
+                    Үйлчилгээ нэмэх
+                  </button>
                 </div>
-
+                {/* Service Add Modal */}
+                {isAddingService && (
+                  <div className="modal-overlay">
+                    <div className="modal-container">
+                      <div className="modal-header">
+                        <h2>Үйлчилгээ нэмэх</h2>
+                        <button className="modal-close" onClick={() => setIsAddingService(false)}>×</button>
+                      </div>
+                      <form onSubmit={handleServiceSubmit} className="service-form">
+                        {serviceFormError && <div className="error-message">{serviceFormError}</div>}
+                        {serviceFormSuccess && <div className="success-message">{serviceFormSuccess}</div>}
+                        <div className="form-group">
+                          <label htmlFor="title">Нэр *</label>
+                          <input type="text" id="title" name="title" value={serviceFormData.title} onChange={handleServiceFormChange} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="description">Тайлбар *</label>
+                          <textarea id="description" name="description" value={serviceFormData.description} onChange={handleServiceFormChange} rows={3} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="price">Үнэ *</label>
+                          <input type="text" id="price" name="price" value={serviceFormData.price} onChange={handleServiceFormChange} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="images">Зураг (URL, , -ээр тусгаарлана)</label>
+                          <input type="text" id="images" name="images" value={serviceFormData.images} onChange={handleServiceFormChange} placeholder="https://example.com/img1.jpg,https://example.com/img2.jpg" />
+                        </div>
+                        <div className="form-buttons">
+                          <button type="button" className="button secondary" onClick={() => setIsAddingService(false)}>
+                            Цуцлах
+                          </button>
+                          <button type="submit" className="button">Нэмэх</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
                 <div className="services-list">
                   <table className="services-table">
                     <thead>
@@ -713,14 +863,34 @@ export function AdminDashboardContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {services.map((service) => (
-                        <tr key={service.id}>
+                      {services.map((service, index) => (
+                        <tr key={service.id || service.name + '-' + index}>
                           <td>{service.name}</td>
                           <td>{service.price}</td>
                           <td>{service.appointments}</td>
                           <td>
-                            <button className="button small">Засах</button>
-                            <button className="button small delete">
+                            <button
+                              className="button small"
+                              onClick={() => {
+                                setServiceToEdit(service);
+                                setServiceEditFormData({
+                                  title: service.name,
+                                  description: service.description || "",
+                                  price: service.price,
+                                  images: Array.isArray((service as any).images) ? (service as any).images.join(",") : ((service as any).images || ""),
+                                });
+                                setIsEditingService(true);
+                              }}
+                            >
+                              Засах
+                            </button>
+                            <button
+                              className="button small delete"
+                              onClick={() => {
+                                setServiceToDelete(service);
+                                setIsDeleteServiceConfirmOpen(true);
+                              }}
+                            >
                               Устгах
                             </button>
                           </td>
@@ -729,6 +899,136 @@ export function AdminDashboardContent() {
                     </tbody>
                   </table>
                 </div>
+                {/* Service Edit Modal */}
+                {isEditingService && serviceToEdit && (
+                  <div className="modal-overlay">
+                    <div className="modal-container">
+                      <div className="modal-header">
+                        <h2>Үйлчилгээ засах</h2>
+                        <button className="modal-close" onClick={() => {
+                          setIsEditingService(false);
+                          setServiceToEdit(null);
+                          setServiceEditFormData({ title: "", description: "", price: "", images: "" });
+                        }}>×</button>
+                      </div>
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setServiceEditFormError("");
+                          setServiceEditFormSuccess("");
+                          try {
+                            const response = await fetch(`/api/services/${serviceToEdit.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                title: serviceEditFormData.title,
+                                description: serviceEditFormData.description,
+                                price: serviceEditFormData.price,
+                                images: serviceEditFormData.images
+                                  ? serviceEditFormData.images.split(",")
+                                  : [],
+                              }),
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                              setServiceEditFormSuccess("Үйлчилгээ амжилттай засагдлаа!");
+                              // Refresh services list
+                              const servicesResponse = (await servicesAPI.getAll()) as { success: boolean; services: { _id: string; title: string; price: string; description?: string }[] };
+                              if (servicesResponse.success) {
+                                setServices(
+                                  servicesResponse.services.map((service) => ({
+                                    id: service._id || service.id,
+                                    name: service.title,
+                                    price: service.price,
+                                    appointments: 0,
+                                    description: service.description || "",
+                                  }))
+                                );
+                              }
+                              setTimeout(() => {
+                                setIsEditingService(false);
+                                setServiceToEdit(null);
+                                setServiceEditFormData({ title: "", description: "", price: "", images: "" });
+                                setServiceEditFormSuccess("");
+                              }, 1500);
+                            } else {
+                              setServiceEditFormError(data.message || "Үйлчилгээ засахад алдаа гарлаа");
+                            }
+                          } catch (error) {
+                            setServiceEditFormError("Үйлчилгээ засахад алдаа гарлаа");
+                          }
+                        }}
+                        className="service-form"
+                      >
+                        {serviceEditFormError && <div className="error-message">{serviceEditFormError}</div>}
+                        {serviceEditFormSuccess && <div className="success-message">{serviceEditFormSuccess}</div>}
+                        <div className="form-group">
+                          <label htmlFor="edit-title">Нэр *</label>
+                          <input type="text" id="edit-title" name="title" value={serviceEditFormData.title} onChange={handleServiceEditFormChange} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="edit-description">Тайлбар *</label>
+                          <textarea id="edit-description" name="description" value={serviceEditFormData.description} onChange={handleServiceEditFormChange} rows={3} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="edit-price">Үнэ *</label>
+                          <input type="text" id="edit-price" name="price" value={serviceEditFormData.price} onChange={handleServiceEditFormChange} required />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="edit-images">Зураг (URL, , -ээр тусгаарлана)</label>
+                          <input type="text" id="edit-images" name="images" value={serviceEditFormData.images} onChange={handleServiceEditFormChange} placeholder="https://example.com/img1.jpg,https://example.com/img2.jpg" />
+                        </div>
+                        <div className="form-buttons">
+                          <button type="button" className="button secondary" onClick={() => setIsEditingService(false)}>
+                            Цуцлах
+                          </button>
+                          <button type="submit" className="button">Хадгалах</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+                {/* Service Delete Confirm Modal */}
+                {isDeleteServiceConfirmOpen && serviceToDelete && (
+                  <div className="modal-overlay">
+                    <div className="modal-container">
+                      <h3>Үйлчилгээ "{serviceToDelete.name}"-г устгахдаа итгэлтэй байна уу?</h3>
+                      <div className="form-buttons">
+                        <button className="button secondary" onClick={() => {
+                          setIsDeleteServiceConfirmOpen(false);
+                          setServiceToDelete(null);
+                        }}>Цуцлах</button>
+                        <button className="button delete" onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/services/${serviceToDelete.id}`, { method: "DELETE" });
+                            const data = await response.json();
+                            if (data.success) {
+                              // Refresh services list
+                              const servicesResponse = (await servicesAPI.getAll()) as { success: boolean; services: { _id: string; title: string; price: string; description?: string }[] };
+                              if (servicesResponse.success) {
+                                setServices(
+                                  servicesResponse.services.map((service) => ({
+                                    id: service._id || service.id,
+                                    name: service.title,
+                                    price: service.price,
+                                    appointments: 0,
+                                    description: service.description || "",
+                                  }))
+                                );
+                              }
+                              setIsDeleteServiceConfirmOpen(false);
+                              setServiceToDelete(null);
+                            } else {
+                              alert(data.message || "Үйлчилгээ устгахад алдаа гарлаа");
+                            }
+                          } catch (error) {
+                            alert("Үйлчилгээ устгахад алдаа гарлаа");
+                          }
+                        }}>Устгах</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1271,7 +1571,7 @@ export function AdminDashboardContent() {
 
       </main>
     </AuthWrapper>
-  );
+      );
 }
 
 function AuditLogs() {
@@ -1497,124 +1797,4 @@ function AuditLogs() {
       </div>
     </div>
   );
-  const [isAddingDoctor, setIsAddingDoctor] = useState(false);
-  const [doctorFormData, setDoctorFormData] = useState<DoctorForm>({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    experience: "",
-    education: "",
-    summary: "",
-    skills: "",
-    image: "/doctor.png", // Default image
-    profession: "",
-    specialization: "",
-    Branch: "Салбар 1",
-    password: "",
-  });
-  const [doctorFormError, setDoctorFormError] = useState("");
-  const [doctorFormSuccess, setDoctorFormSuccess] = useState("");
-
-  const handleDoctorSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setDoctorFormError("");
-    setDoctorFormSuccess("");
-
-    // Basic validation
-    if (
-      !doctorFormData.name ||
-      !doctorFormData.email ||
-      !doctorFormData.phone ||
-      !doctorFormData.profession ||
-      !doctorFormData.specialization ||
-      !doctorFormData.password
-    ) {
-      setDoctorFormError("Бүх талбарыг бөглөнө үү");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/doctors", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(doctorFormData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setDoctorFormSuccess("Эмч амжилттай нэмэгдлээ!");
-        setDoctorFormData({
-          name: "",
-          phone: "",
-          email: "",
-          address: "",
-          experience: "",
-          education: "",
-          summary: "",
-          skills: "",
-          image: "/doctor.png",
-          profession: "",
-          specialization: "",
-          Branch: "Салбар 1",
-          password: "",
-        });
-
-        // Refresh doctors list
-        const doctorsResponse = (await doctorsAPI.getAll()) as {
-          success: boolean;
-          doctors: { id: string; name: string; specialization: string }[];
-        };
-
-        if (doctorsResponse.success) {
-          setDoctors(
-            doctorsResponse.doctors.map((doctor) => ({
-              id: doctor.id,
-              name: doctor.name,
-              specialization: doctor.specialization,
-              appointments: 0,
-              rating: 4.0,
-            }))
-          );
-        }
-
-        // Close the form after a delay
-        setTimeout(() => {
-          setIsAddingDoctor(false);
-          setDoctorFormSuccess("");
-        }, 2000);
-      } else {
-        setDoctorFormError(data.message || "Эмч нэмэхэд алдаа гарлаа");
-      }
-    } catch (error) {
-      console.error("Error adding doctor:", error);
-      setDoctorFormError("Эмч нэмэхэд алдаа гарлаа");
-    }
-  };
-
-  const handleDoctorFormChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setDoctorFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-}
-function setDoctors(
-  arg0: {
-    id: string;
-    name: string;
-    specialization: string;
-    appointments: number;
-    rating: number;
-  }[]
-) {
-  throw new Error("Function not implemented.");
 }
